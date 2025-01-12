@@ -7,12 +7,14 @@
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
 </head>
 <body>
-    <div class="details-card">
+    <div class="details-card ">
         <h1>{{ planta.nombre }}</h1>
         <p><strong>Temperatura:</strong> {{ planta.temperatura_min }}°C - {{ planta.temperatura_max }}°C</p>
         <p><strong>PH:</strong> {{ planta.ph_min }} - {{ planta.ph_max }}</p>
-        <p><strong>Humedad:</strong> {{ planta.humedad_min }}% - {{ planta.humedad_max }}%</p>        
+        <p><strong>Humedad:</strong> {{ planta.humedad_min }}% - {{ planta.humedad_max }}%</p>   
+     <div class= "text-center">
+        <a href="{{ url_for('main.simulate', id=planta.id) }}" class="btn btn-primary " >Ver Simulación</a>
+    </div>      
     </div>
-    <a href="{{ url_for('main.simulate', id=planta.id) }}" class="btn btn-primary">Ver Simulación</a>
 </body>
 </html>
