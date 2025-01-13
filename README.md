@@ -8,7 +8,7 @@ pip install -r requirements.txt
 
 Configura tu base de datos en app/__init__.py:
 ```
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://usuario:contraseña@localhost/nombre_base_datos'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/plantas_db'
 ```
 
 Inicializa la base de datos:
