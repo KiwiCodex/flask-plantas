@@ -11,9 +11,20 @@
         <h1>Crear nueva planta</h1>
         <form action="{{ url_for('main.create') }}" method="POST">
             <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre:</label>
-                <input type="text" class="form-control" name="nombre" required>
+                <label for="numero" class="form-label">Número del módulo:</label>
+                <input type="number" class="form-control" name="numero" required>
             </div>
+            <div class="mb-3">
+                <label for="especie" class="form-label">Nombre de Especie:</label>
+                <input type="text" class="form-control" name="especie" required>
+            </div>
+            <div class="mb-3">
+                <label for="ubicacion" class="form-label">Ubicación (Opcional):</label>
+                <input type="text" class="form-control" name="ubicacion">
+                <small class="form-text text-muted">Este campo es opcional</small>
+            </div>
+            <!-- Rango de parámetros -->
+            <h3>Rango de Parámetros</h3>
             <div class="mb-3">
                 <label for="temperatura_min" class="form-label">Temperatura Mínima:</label>
                 <input type="number" class="form-control" name="temperatura_min" required>

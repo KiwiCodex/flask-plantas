@@ -42,16 +42,30 @@ th, td {
 
 .wrap {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 40px 0; /* Separación mayor entre la planta y el estado */
-    position: relative;
+    justify-content: space-around; /* Para separar el estado y la planta */
+    align-items: flex-start; /* Alinea los elementos al principio */
+    margin: 40px 0;
+}
+
+.state-container, .plant-container {
+    width: 300px; /* Ancho fijo para los recuadros */
+    margin: 10px; /* Separación entre los recuadros */
+    padding: 20px; /* Relleno dentro de los recuadros */
+    border: 2px solid #ccc; /* Borde de los recuadros */
+    border-radius: 10px; /* Esquinas redondeadas */
+    background-color: #fff; /* Fondo blanco */
+    position: relative; /* Esto permite usar z-index para el apilamiento */
+}
+
+.state-container {
+    margin-right: 20px; /* Menos margen entre los recuadros */
 }
 
 .base {
     position: relative;
     display: block;
     width: 110px;
+    z-index: 1; /* Aseguramos que la planta verde esté por debajo del macetero */
 }
 
 .flowerpot {
@@ -61,6 +75,7 @@ th, td {
     overflow: hidden;
     background-image: linear-gradient(50deg, white 20px, white 21px, transparent 20px), 
                       linear-gradient(310deg, white 20px, #d1bb94 21px, #d1bb94 100%);
+    z-index: 2; /* El macetero tiene un z-index mayor, asegurando que se vea sobre la planta */
 }
 
 .flowerpot:after {
@@ -73,6 +88,7 @@ th, td {
     height: 90px;
     background: linear-gradient(285deg, #d1bb94 20px, #d6c8a5 21px, #d6c8a5 100%);
     transform: rotate(50deg);
+    z-index: 3; /* Asegura que el macetero esté por encima de la planta */
 }
 
 .blade {
@@ -80,7 +96,7 @@ th, td {
     bottom: 40px;
     overflow: hidden;
     transform-origin: 50% 100%;
-    z-index: -1;
+    z-index: 0; /* Las hojas están por debajo del macetero */
 }
 
 .blade::before, .blade::after {
@@ -134,6 +150,6 @@ button {
 }
 
 hr {
-clear: both;
-visibility: hidden;
+    clear: both;
+    visibility: hidden;
 }

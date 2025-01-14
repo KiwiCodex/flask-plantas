@@ -3,33 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulación de {{ planta.nombre }}</title>
+    <title>Simulación de {{ modulo.especie }}</title>
     <link href="{{ url_for('static', filename='css/planta.css') }}" rel="stylesheet">
 </head>
 <body>
-    <h1>Simulación para: {{ planta.nombre }}</h1>
+    <h1>Modulo de: {{ modulo.especie }}</h1>
 
-    <!-- Estado de la planta -->
-    <div class="box {{ estado_color }}" id="estado-planta">
-        {% if estado_color == 'green' %} 😊 ¡Todo bien!
-        {% elif estado_color == 'yellow' %} 😐 En cuidado
-        {% elif estado_color == 'orange' %} 😟 Preocupado
-        {% else %} 😭 Necesito ayuda
-        {% endif %}
-    </div>
-
-    <hr>
-    <hr>
-    <hr>
-    <hr>
-    
-    <!-- Representación visual de la planta -->
     <div class="wrap">
-        <div class="base">
-            <div class="flowerpot"></div>
-            <div class="blade blade-center"></div>
+        <!-- Contenedor para el estado de la planta -->
+        <div class="state-container">
+            <div class="box {{ estado_color }}" id="estado-planta">
+                {% if estado_color == 'green' %} 😊 ¡Todo bien!
+                {% elif estado_color == 'yellow' %} 😐 En cuidado
+                {% elif estado_color == 'orange' %} 😟 Preocupado
+                {% else %} 😭 Necesito ayuda
+                {% endif %}
+            </div>
+        </div>
+    
+        <!-- Contenedor para la representación visual de la planta -->
+        <div class="plant-container">
+            <div class="wrap">
+                <div class="base">
+                    <div class="flowerpot"></div>
+                    <div class="blade blade-center"></div>
+                </div>
+            </div>
         </div>
     </div>
+    
+    
 
     <!-- Tabla de condiciones -->
     <table id="tabla-condiciones">
@@ -45,23 +48,22 @@
             <tr>
                 <td>Temperatura</td>
                 <td>{{ valores_simulados.temperatura | round(1) }}°C</td>
-                <td>{{ planta.temperatura_min }}°C - {{ planta.temperatura_max }}°C</td>
-                <td>{{ '✔️' if rangos.temperatura else '❌' }}</td>
+                <td>{{ modulo.especie_rango.temperatura_min }}°C - {{ modulo.especie_rango.temperatura_max }}°C</td>
+                <td>{{ '✔️' if condiciones['temperatura'] else '❌' }}</td>
             </tr>
             <tr>
                 <td>PH</td>
                 <td>{{ valores_simulados.ph | round(1) }}</td>
-                <td>{{ planta.ph_min }} - {{ planta.ph_max }}</td>
-                <td>{{ '✔️' if rangos.ph else '❌' }}</td>
+                <td>{{ modulo.especie_rango.ph_min }} - {{ modulo.especie_rango.ph_max }}</td>
+                <td>{{ '✔️' if condiciones['ph'] else '❌' }}</td>
             </tr>
             <tr>
                 <td>Humedad</td>
                 <td>{{ valores_simulados.humedad }}%</td>
-                <td>{{ planta.humedad_min }}% - {{ planta.humedad_max }}%</td>
-                <td>{{ '✔️' if rangos.humedad else '❌' }}</td>
+                <td>{{ modulo.especie_rango.humedad_min }}% - {{ modulo.especie_rango.humedad_max }}%</td>
+                <td>{{ '✔️' if condiciones['humedad'] else '❌' }}</td>
             </tr>
         </tbody>
-        
     </table>
 
     <!-- Botón para generar nuevos valores -->
@@ -71,8 +73,7 @@
 
     <script>
         function generarNuevosValores() {
-            // Envía una solicitud GET para recargar con nuevos valores simulados
-            location.href = "{{ url_for('main.simulate', id=planta.id) }}";
+            location.href = "{{ url_for('main.simulate', id=modulo.id) }}";
         }
     </script>
 </body>

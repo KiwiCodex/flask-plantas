@@ -18,21 +18,21 @@
             </tr>
         </thead>
         <tbody>
-            {% for planta in plantas %}
+            {% for modulo in modulos %}
                 <tr>
-                    <td>{{ planta.nombre }}</td>
+                    <td>{{ modulo.especie }}</td> <!-- Aquí debería estar 'modulo.especie' en lugar de 'planta.nombre' -->
                     <td>
-                        <a href="{{ url_for('main.show', id=planta.id) }}" class="btn btn-link">Ver Detalles</a>
+                        <a href="{{ url_for('main.show', id=modulo.id) }}" class="btn btn-link">Ver Detalles</a>
                         |
-                        <form action="{{ url_for('main.delete', id=planta.id) }}" method="POST" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar esta planta?');">
+                        <form action="{{ url_for('main.delete', id=modulo.id) }}" method="POST" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de que deseas eliminar este módulo?');">
                                 Eliminar
                             </button>
                         </form>
                     </td>
                 </tr>
             {% endfor %}
-        </tbody>
+        </tbody>        
     </table>
 </body>
 </html>
