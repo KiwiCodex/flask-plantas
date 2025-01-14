@@ -28,7 +28,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/modulos_db'
 
 Inicializa la base de datos:
 ```
+pip install mysqlclient
+flask db migrate -m "mensaje de migración"
 flask db upgrade
-flask run
 ```
 
