@@ -49,22 +49,23 @@
                 <td>Temperatura</td>
                 <td>{{ valores_simulados.temperatura | round(1) }}°C</td>
                 <td>{{ modulo.especie_rango.temperatura_min }}°C - {{ modulo.especie_rango.temperatura_max }}°C</td>
-                <td>{{ '✔️' if condiciones['temperatura'] else '❌' }}</td>
+                <td>{{ '🟢' if condiciones['temperatura'] else '🔴' }}</td>
             </tr>
             <tr>
                 <td>PH</td>
                 <td>{{ valores_simulados.ph | round(1) }}</td>
                 <td>{{ modulo.especie_rango.ph_min }} - {{ modulo.especie_rango.ph_max }}</td>
-                <td>{{ '✔️' if condiciones['ph'] else '❌' }}</td>
+                <td>{{ '🟢' if condiciones['ph'] else '🔴' }}</td>
             </tr>
             <tr>
                 <td>Humedad</td>
                 <td>{{ valores_simulados.humedad }}%</td>
                 <td>{{ modulo.especie_rango.humedad_min }}% - {{ modulo.especie_rango.humedad_max }}%</td>
-                <td>{{ '✔️' if condiciones['humedad'] else '❌' }}</td>
+                <td>{{ '🟢' if condiciones['humedad'] else '🔴' }}</td>
             </tr>
         </tbody>
     </table>
+    
 
     <!-- Botón para generar nuevos valores -->
     <div class="button-container">
