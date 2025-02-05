@@ -15,11 +15,16 @@ def index():
     modulos = ModuloEscolar.query.all()  # Obtener todos los módulos
     return render_template('index.html', modulos=modulos)
 
-@main.route('/escuela', methods=['GET', 'POST'])
-def crear_escuela():
+@main.route('/escuelas')
+def escuela_lista():
+    escuelas = Escuela.query.all()  # Obtener todas las escuelas de la BD
+    return render_template('escuela_lista.html', escuelas=escuelas)
+
+@main.route('/escuela/crear', methods=['GET', 'POST'])
+def escuela_crear():
     if request.method == 'POST':
         try:
-            data = request.form  # Ahora viene desde el formulario HTML
+            data = request.form  # Datos desde el formulario HTML
 
             nombre = data.get("nombre")
             coordenadas_wkt = COLEGIOS.get(nombre)
@@ -30,14 +35,26 @@ def crear_escuela():
 
             if not coordenadas_wkt:
                 flash("Colegio no válido", "danger")
-                return redirect(url_for('main.crear_escuela'))
+                return redirect(url_for('main.escuela_crear'))
 
             # Convertir WKT a objeto POINT
             lon, lat = coordenadas_wkt.replace("POINT (", "").replace(")", "").strip().split()
-            lon = round(float(lon.strip().rstrip(',')), 6)  # Eliminar espacios y coma extra
-            lat = round(float(lat.strip().rstrip(',')), 6)  # Eliminar espacios y coma extra
+            lon = round(float(lon.strip().rstrip(',')), 6)
+            lat = round(float(lat.strip().rstrip(',')), 6)
             point_geom = from_shape(Point(lon, lat))
 
+            # Verificar si ya existe una escuela con los mismos datos excepto el curso
+            escuela_existente = Escuela.query.filter_by(
+                nombre=nombre,
+                coordenadas=point_geom,
+                comuna=comuna,
+                director=director,
+                profesor=profesor
+            ).first()
+
+            if escuela_existente and escuela_existente.curso == curso:
+                flash("Ya existe una escuela con los mismos datos y curso. Cambie al menos un campo.", "danger")
+                return redirect(url_for('main.escuela_crear'))
 
             # Crear la nueva escuela
             nueva_escuela = Escuela(
@@ -53,14 +70,15 @@ def crear_escuela():
             db.session.commit()
 
             flash("Escuela creada correctamente", "success")
-            return redirect(url_for('main.index'))
+            return redirect(url_for('main.escuela_lista'))
 
         except Exception as e:
             db.session.rollback()
             flash(f"Error: {str(e)}", "danger")
-            return redirect(url_for('main.crear_escuela'))
+            return redirect(url_for('main.escuela_crear'))
 
-    return render_template('create_escuela.html', COLEGIOS=COLEGIOS)  # Enviar datos al template
+    return render_template('escuela_crear.html', COLEGIOS=COLEGIOS)
+
 
 
 @main.route('/api/datos')
