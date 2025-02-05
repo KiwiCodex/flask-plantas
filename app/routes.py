@@ -79,7 +79,31 @@ def escuela_crear():
 
     return render_template('escuela_crear.html', COLEGIOS=COLEGIOS)
 
+@main.route('/escuela/editar/<int:id>', methods=['GET', 'POST'])
+def escuela_editar(id):
+    escuela = Escuela.query.get_or_404(id)
 
+    if request.method == 'POST':
+        escuela.nombre = request.form['nombre']
+        escuela.comuna = request.form['comuna']
+        escuela.director = request.form['director']
+        escuela.profesor = request.form['profesor']
+        escuela.curso = request.form['curso']
+
+        db.session.commit()
+        flash("Escuela actualizada correctamente", "success")
+        return redirect(url_for('main.escuela_lista'))
+
+    return render_template('escuela_editar.html', escuela=escuela)
+
+
+@main.route('/escuela/eliminar/<int:id>', methods=['POST'])
+def escuela_eliminar(id):
+    escuela = Escuela.query.get_or_404(id)
+    db.session.delete(escuela)
+    db.session.commit()
+    flash("Escuela eliminada correctamente", "success")
+    return redirect(url_for('main.escuela_lista'))
 
 @main.route('/api/datos')
 def api_datos():

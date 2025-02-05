@@ -50,7 +50,7 @@ h1 {
 /* Enlaces dentro de la tabla */
 .table a {
     text-decoration: none;
-    color: #007bff;
+    color: white;
     font-weight: bold;
 }
 
