@@ -52,3 +52,12 @@ Ejecutar aplicación:
 ```
 python run.py
 ```
+
+Para la API_KEY, se debe crear un archivo .env:
+```
+API_TOKEN="Tu_API_KEY"
+```
+
+
+
+
