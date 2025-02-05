@@ -1,0 +1,4 @@
+
+COLEGIOS = {
+    "Campus Huayquique": "POINT (-20.269876434271158, -70.13000786156802)",
+}
