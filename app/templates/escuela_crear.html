@@ -49,16 +49,19 @@
 
             <!-- Coordenadas (se llenan automáticamente) -->
             <div class="mb-3">
-                <label for="coordenadas" class="form-label">Coordenadas</label>
-                <input type="text" class="form-control" id="coordenadas" name="coordenadas" readonly>
+                <label for="director" class="form-label">Coordenadas</label>
+                <input type="text" id="coordenadas" name="coordenadas" class="form-control" 
+                placeholder="Campo se llenará automáticamente al seleccionar el nombre de la Escuela" readonly>
+            </div>
+
+            <!-- Comuna (se llenan automáticamente) -->
+            <div class="mb-3">
+                <label for="director" class="form-label">Comuna</label>
+                <input type="text" id="comuna" name="comuna" class="form-control" 
+                placeholder="Campo se llenará automáticamente al seleccionar el nombre de la Escuela" readonly>
             </div>
 
             <!-- Otros datos -->
-            <div class="mb-3">
-                <label for="comuna" class="form-label">Comuna</label>
-                <input type="text" class="form-control" id="comuna" name="comuna" required>
-            </div>
-
             <div class="mb-3">
                 <label for="director" class="form-label">Director</label>
                 <input type="text" class="form-control" id="director" name="director" required>
@@ -80,56 +83,58 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var colegios = JSON.parse('{{ COLEGIOS | tojson | safe }}');
-            var nombreInput = document.getElementById("nombre");
-            var dropdown = document.getElementById("dropdown");
-            var coordenadasInput = document.getElementById("coordenadas");
+    document.addEventListener("DOMContentLoaded", function () {
+        var colegios = JSON.parse('{{ COLEGIOS | tojson | safe }}');
+        var nombreInput = document.getElementById("nombre");
+        var dropdown = document.getElementById("dropdown");
+        var coordenadasInput = document.getElementById("coordenadas");
+        var comunaInput = document.getElementById("comuna");
 
-            // Función para actualizar la lista desplegable
-            function actualizarLista(filtro) {
-                dropdown.innerHTML = ""; // Limpiar opciones previas
-                var opcionesFiltradas = Object.keys(colegios).filter(colegio => colegio.toLowerCase().includes(filtro.toLowerCase()));
+        // Función para actualizar la lista desplegable
+        function actualizarLista(filtro) {
+            dropdown.innerHTML = ""; // Limpiar opciones previas
+            var opcionesFiltradas = Object.keys(colegios).filter(colegio => colegio.toLowerCase().includes(filtro.toLowerCase()));
 
-                if (opcionesFiltradas.length === 0) {
-                    dropdown.style.display = "none"; // Ocultar si no hay coincidencias
-                    return;
-                }
-
-                opcionesFiltradas.forEach(colegio => {
-                    var item = document.createElement("div");
-                    item.classList.add("dropdown-item");
-                    item.textContent = colegio;
-
-                    // Al hacer clic en una opción, se selecciona automáticamente
-                    item.addEventListener("click", function () {
-                        nombreInput.value = colegio;
-                        coordenadasInput.value = colegios[colegio]; // Asigna coordenadas
-                        dropdown.style.display = "none"; // Ocultar menú
-                    });
-
-                    dropdown.appendChild(item);
-                });
-
-                dropdown.style.display = "block"; // Mostrar la lista
+            if (opcionesFiltradas.length === 0) {
+                dropdown.style.display = "none"; // Ocultar si no hay coincidencias
+                return;
             }
 
-            // Evento cuando el usuario escribe
-            nombreInput.addEventListener("input", function () {
-                if (this.value.length > 0) {
-                    actualizarLista(this.value);
-                } else {
-                    dropdown.style.display = "none"; // Ocultar si está vacío
-                }
+            opcionesFiltradas.forEach(colegio => {
+                var item = document.createElement("div");
+                item.classList.add("dropdown-item");
+                item.textContent = colegio;
+
+                // Al hacer clic en una opción, se selecciona automáticamente
+                item.addEventListener("click", function () {
+                    nombreInput.value = colegio;
+                    coordenadasInput.value = colegios[colegio].coordenadas; // Asigna coordenadas
+                    comunaInput.value = colegios[colegio].comuna; // Asigna comuna
+                    dropdown.style.display = "none"; // Ocultar menú
+                });
+
+                dropdown.appendChild(item);
             });
 
-            // Ocultar el menú si se hace clic fuera
-            document.addEventListener("click", function (e) {
-                if (!nombreInput.contains(e.target) && !dropdown.contains(e.target)) {
-                    dropdown.style.display = "none";
-                }
-            });
+            dropdown.style.display = "block"; // Mostrar la lista
+        }
+
+        // Evento cuando el usuario escribe
+        nombreInput.addEventListener("input", function () {
+            if (this.value.length > 0) {
+                actualizarLista(this.value);
+            } else {
+                dropdown.style.display = "none"; // Ocultar si está vacío
+            }
         });
+
+        // Ocultar el menú si se hace clic fuera
+        document.addEventListener("click", function (e) {
+            if (!nombreInput.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = "none";
+            }
+        });
+    });
     </script>
 </body>
 </html>

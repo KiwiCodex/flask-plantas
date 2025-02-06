@@ -24,23 +24,24 @@ def escuela_lista():
 def escuela_crear():
     if request.method == 'POST':
         try:
-            data = request.form  # Datos desde el formulario HTML
+            data = request.form  
 
             nombre = data.get("nombre")
-            coordenadas_wkt = COLEGIOS.get(nombre)
             comuna = data.get("comuna")
             director = data.get("director")
             profesor = data.get("profesor")
             curso = data.get("curso")
 
-            if not coordenadas_wkt:
+            # Obtener información de la escuela desde COLEGIOS
+            info_escuela = COLEGIOS.get(nombre)
+            if not info_escuela:
                 flash("Colegio no válido", "danger")
                 return redirect(url_for('main.escuela_crear'))
 
+            coordenadas_wkt = info_escuela["coordenadas"]
+
             # Convertir WKT a objeto POINT
-            lon, lat = coordenadas_wkt.replace("POINT (", "").replace(")", "").strip().split()
-            lon = round(float(lon.strip().rstrip(',')), 6)
-            lat = round(float(lat.strip().rstrip(',')), 6)
+            lon, lat = map(float, coordenadas_wkt.replace("POINT (", "").replace(")", "").strip().split())
             point_geom = from_shape(Point(lon, lat))
 
             # Verificar si ya existe una escuela con los mismos datos excepto el curso
@@ -78,6 +79,7 @@ def escuela_crear():
             return redirect(url_for('main.escuela_crear'))
 
     return render_template('escuela_crear.html', COLEGIOS=COLEGIOS)
+
 
 @main.route('/escuela/editar/<int:id>', methods=['GET', 'POST'])
 def escuela_editar(id):
