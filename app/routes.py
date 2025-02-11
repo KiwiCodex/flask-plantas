@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from app.models import ModuloEscolar, Planta, Rangos, Escuela, Variables
+from app.models import ModuloEscolar, Planta, Rangos, Escuela, Variables, Dataloger, MedicionesBajadas
 from app import db
 from colegios import COLEGIOS
 from geoalchemy2.shape import from_shape
@@ -152,6 +152,62 @@ def variables_eliminar(id):
 
     flash("Variable eliminada correctamente", "success")
     return redirect(url_for('main.variables_lista'))
+
+
+# -- TABLA DATALOGER --
+
+@main.route('/datalogers', methods=['GET'])
+def datalogers_lista():
+    datalogers = Dataloger.query.all()
+    return render_template('datalogers_lista.html', datalogers=datalogers)
+
+
+@main.route('/datalogers/crear', methods=['GET', 'POST'])
+def datalogers_crear():
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        ip = request.form['ip']
+        api_token = request.form['api_token']
+        api_url = request.form['api_url']
+
+        nuevo_dataloger = Dataloger(nombre=nombre, ip=ip, api_token=api_token, api_url=api_url)
+        db.session.add(nuevo_dataloger)
+        db.session.commit()
+
+        flash("Dataloger creado correctamente", "success")
+        return redirect(url_for('main.datalogers_lista'))
+
+    return render_template('datalogers_crear.html')
+
+
+@main.route('/datalogers/editar/<int:id>', methods=['GET', 'POST'])
+def datalogers_editar(id):
+    dataloger = Dataloger.query.get_or_404(id)
+
+    if request.method == 'POST':
+        dataloger.nombre = request.form['nombre']
+        dataloger.ip = request.form['ip']
+        dataloger.api_token = request.form['api_token']
+        dataloger.api_url = request.form['api_url']
+
+        db.session.commit()
+        flash("Dataloger actualizado correctamente", "success")
+        return redirect(url_for('main.datalogers_lista'))
+
+    return render_template('datalogers_editar.html', dataloger=dataloger)
+
+
+@main.route('/datalogers/eliminar/<int:id>', methods=['POST'])
+def datalogers_eliminar(id):
+    dataloger = Dataloger.query.get_or_404(id)
+    db.session.delete(dataloger)
+    db.session.commit()
+
+    flash("Dataloger eliminado correctamente", "success")
+    return redirect(url_for('main.datalogers_lista'))
+
+
+
 
 
 

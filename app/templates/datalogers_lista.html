@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Datalogers{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Lista de Datalogers</h1>
+    <hr>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <table class="table table-striped text-center">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>IP</th>
+                <th>API URL</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for dataloger in datalogers %}
+            <tr>
+                <td>{{ dataloger.nombre }}</td>
+                <td>{{ dataloger.ip }}</td>
+                <td>{{ dataloger.api_url }}</td>
+                <td>
+                    <a href="{{ url_for('main.datalogers_editar', id=dataloger.id) }}" class="btn btn-info btn-sm">Editar</a>
+                    <form action="{{ url_for('main.datalogers_eliminar', id=dataloger.id) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar este Dataloger?');">
+                            Eliminar
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-center mt-3">
+        <a href="{{ url_for('main.datalogers_crear') }}" class="btn btn-primary">Agregar Dataloger</a>
+    </div>
+</div>
+{% endblock %}
