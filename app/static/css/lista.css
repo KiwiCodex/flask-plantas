@@ -65,6 +65,12 @@ hr {
     margin: 20px 0;
 }
 
+.button-container {
+    display: flex;
+    gap: 10px; /* Espacio entre botones */
+    justify-content: center; /* Centrar botones */
+}
+
 /* Botón de agregar planta */
 .add-plant-button {
     display: inline-block;
@@ -83,4 +89,12 @@ hr {
 .add-plant-button:hover {
     background-color: #218838;
     color: white;
+}
+
+.navbar-brand {
+    font-weight: bold;
+}
+
+.navbar-nav .nav-link {
+    font-size: 16px;
 }

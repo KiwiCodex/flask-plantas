@@ -7,6 +7,12 @@
     <link href="{{ url_for('static', filename='css/lista.css') }}" rel="stylesheet">
 </head>
 <body>
+    {% extends "base.html" %}
+
+    {% block title %}Inicio{% endblock %}
+    
+    {% block content %}
+
     <div class="container mt-5">
         <h1 class="text-center">Lista de Escuelas</h1>
         <hr>
@@ -62,5 +68,7 @@
             <a href="{{ url_for('main.escuela_crear') }}" class="btn btn-primary">Agregar Escuela</a>
         </div>
     </div>
+    {% endblock %}
+
 </body>
 </html>

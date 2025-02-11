@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from app.models import ModuloEscolar, Planta, Rangos, Escuela
+from app.models import ModuloEscolar, Planta, Rangos, Escuela, Variables
 from app import db
 from colegios import COLEGIOS
 from geoalchemy2.shape import from_shape
@@ -15,6 +15,7 @@ def index():
     modulos = ModuloEscolar.query.all()  # Obtener todos los módulos
     return render_template('index.html', modulos=modulos)
 
+# -- TABLA ESCUELA --
 @main.route('/escuelas')
 def escuela_lista():
     escuelas = Escuela.query.all()  # Obtener todas las escuelas de la BD
@@ -107,6 +108,54 @@ def escuela_eliminar(id):
     flash("Escuela eliminada correctamente", "success")
     return redirect(url_for('main.escuela_lista'))
 
+
+# -- TABLA VARIABLES --
+@main.route('/variables', methods=['GET'])
+def variables_lista():
+    variables = Variables.query.all()
+    return render_template('variables_lista.html', unidades=variables)  
+
+@main.route('/variables/crear', methods=['GET', 'POST'])
+def variables_crear():
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        unidad_medida = request.form['abreviatura']  
+
+        nueva_variable = Variables(nombre=nombre, unidad_medida=unidad_medida)
+        db.session.add(nueva_variable)
+        db.session.commit()
+
+        flash("Variable creada correctamente", "success")
+        return redirect(url_for('main.variables_lista'))
+
+    return render_template('variables_crear.html')
+
+@main.route('/variables/editar/<int:id>', methods=['GET', 'POST'])
+def variables_editar(id):
+    variable = Variables.query.get_or_404(id)
+
+    if request.method == 'POST':
+        variable.nombre = request.form['nombre']
+        variable.unidad_medida = request.form['abreviatura']  # Asegurar que se use 'unidad_medida'
+
+        db.session.commit()
+        flash("Variable actualizada correctamente", "success")
+        return redirect(url_for('main.variables_lista'))
+
+    return render_template('variables_editar.html', variable=variable)
+
+@main.route('/variables/eliminar/<int:id>', methods=['GET'])
+def variables_eliminar(id):
+    variable = Variables.query.get_or_404(id)
+    db.session.delete(variable)
+    db.session.commit()
+
+    flash("Variable eliminada correctamente", "success")
+    return redirect(url_for('main.variables_lista'))
+
+
+
+# -- API -- 
 @main.route('/api/datos')
 def api_datos():
     """Devuelve datos desde la API de ZentraCloud."""
@@ -118,6 +167,7 @@ def api_datos():
         return jsonify({"error": "No se pudieron obtener los datos"}), 500
 
     return jsonify(datos_nube)
+
 
 
 
