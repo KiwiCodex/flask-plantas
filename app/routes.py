@@ -10,10 +10,69 @@ from .api_client import obtener_datos
 # Define el blueprint
 main = Blueprint('main', __name__)
 
+# -- TABLA MODULOS Y ENTIDADES --
+
 @main.route('/')
 def index():
     modulos = ModuloEscolar.query.all()  # Obtener todos los módulos
     return render_template('index.html', modulos=modulos)
+
+# Crear un nuevo módulo escolar
+@main.route('/modulos/crear', methods=['GET', 'POST'])
+def modulos_crear():
+    if request.method == 'POST':
+        nombre = request.form['nombre']
+        ubicacion = request.form.get('ubicacion', None)
+        coordenadas = request.form.get('coordenadas', None)
+        id_escuela = request.form['escuela']
+        id_dataloger = request.form['dataloger']
+        id_planta = request.form['planta']
+
+        nuevo_modulo = ModuloEscolar(
+            nombre=nombre,
+            ubicacion=ubicacion,
+            coordenadas=coordenadas,
+            id_escuela=id_escuela,
+            id_dataloger=id_dataloger,
+            id_planta=id_planta
+        )
+
+        db.session.add(nuevo_modulo)
+        db.session.commit()
+        flash("Módulo escolar creado correctamente", "success")
+        return redirect(url_for('main.index'))
+
+    escuelas = Escuela.query.all()
+    datalogers = Dataloger.query.all()
+    plantas = Planta.query.all()
+    rangos = Rangos.query.all()
+
+    return render_template('modulos_crear.html', escuelas=escuelas, datalogers=datalogers, plantas=plantas, rangos=rangos)
+
+# Editar un módulo escolar
+@main.route('/modulos/editar/<int:id>', methods=['GET', 'POST'])
+def modulos_editar(id):
+    modulo = ModuloEscolar.query.get_or_404(id)
+
+    if request.method == 'POST':
+        modulo.nombre = request.form['nombre']
+        modulo.ubicacion = request.form.get('ubicacion', None)
+        modulo.coordenadas = request.form.get('coordenadas', None)
+        modulo.id_escuela = request.form['escuela']
+        modulo.id_dataloger = request.form['dataloger']
+        modulo.id_planta = request.form['planta']
+
+        db.session.commit()
+        flash("Módulo escolar actualizado correctamente", "success")
+        return redirect(url_for('main.index'))
+
+    escuelas = Escuela.query.all()
+    datalogers = Dataloger.query.all()
+    plantas = Planta.query.all()
+    rangos = Rangos.query.all()
+
+    return render_template('modulos_editar.html', modulo=modulo, escuelas=escuelas, datalogers=datalogers, plantas=plantas, rangos=rangos)
+
 
 # -- TABLA ESCUELA --
 @main.route('/escuelas')

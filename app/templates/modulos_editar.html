@@ -1,20 +1,79 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ modulo.especie }}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
-</head>
-<body>
-    <div class="details-card ">
-        <h1>{{ modulo.especie }}</h1>
-        <p><strong>Temperatura:</strong> {{ modulo.especie_rango.temperatura_min }}°C - {{ modulo.especie_rango.temperatura_max }}°C</p>
-        <p><strong>PH:</strong> {{ modulo.especie_rango.ph_min }} - {{ modulo.especie_rango.ph_max }}</p>
-        <p><strong>Humedad:</strong> {{ modulo.especie_rango.humedad_min }}% - {{ modulo.especie_rango.humedad_max }}%</p>   
-        <div class="text-center">
-            <a href="{{ url_for('main.simulate', id=modulo.id) }}" class="btn btn-primary">Ver Simulación</a>
-        </div>      
-    </div>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Editar Módulo Escolar{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center">Editar Módulo Escolar</h1>
+    <hr>
+    <form method="POST" action="{{ url_for('main.modulos_editar', id=modulo.id) }}">
+        <div class="mb-3">
+            <label for="nombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="nombre" name="nombre" value="{{ modulo.nombre }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="ubicacion" class="form-label">Ubicación</label>
+            <input type="text" class="form-control" id="ubicacion" name="ubicacion" value="{{ modulo.ubicacion }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="coordenadas" class="form-label">Coordenadas</label>
+            <input type="text" class="form-control" id="coordenadas" name="coordenadas" value="{{ modulo.coordenadas }}">
+        </div>
+        
+        <div class="mb-3">
+            <label for="escuela" class="form-label">Escuela</label>
+            <select class="form-control" id="escuela" name="escuela" required>
+                {% for escuela in escuelas %}
+                    <option value="{{ escuela.id }}" {% if escuela.id == modulo.id_escuela %}selected{% endif %}>{{ escuela.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="dataloger" class="form-label">Dataloger</label>
+            <select class="form-control" id="dataloger" name="dataloger" required>
+                {% for dataloger in datalogers %}
+                    <option value="{{ dataloger.id }}" {% if dataloger.id == modulo.id_dataloger %}selected{% endif %}>{{ dataloger.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="planta" class="form-label">Planta</label>
+            <select class="form-control" id="planta" name="planta" required>
+                {% for planta in plantas %}
+                    <option value="{{ planta.id }}" {% if planta.id == modulo.id_planta %}selected{% endif %}>{{ planta.especie }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="fecha_plantado" class="form-label">Fecha de Plantado</label>
+            <input type="date" class="form-control" id="fecha_plantado" name="fecha_plantado" value="{{ modulo.planta.fecha_plantado }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="fecha_cosecha" class="form-label">Fecha de Cosecha</label>
+            <input type="date" class="form-control" id="fecha_cosecha" name="fecha_cosecha" value="{{ modulo.planta.fecha_cosecha }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="rango" class="form-label">Rangos</label>
+            <select class="form-control" id="rango" name="rango">
+                {% for rango in rangos %}
+                    <option value="{{ rango.id }}" {% if rango.id == modulo.rango.id %}selected{% endif %}>
+                        Temperatura: {{ rango.temperatura_min }}°C - {{ rango.temperatura_max }}°C, 
+                        PH: {{ rango.ph_min }} - {{ rango.ph_max }}, 
+                        Humedad: {{ rango.humedad_min }}% - {{ rango.humedad_max }}%
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}
