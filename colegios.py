@@ -1,14 +1,3 @@
-
-COLEGIOS = {
-    "Campus Huayquique": {
-        "coordenadas": "POINT (-70.13000786156802 -20.269876434271158)",  # Longitud y latitud en formato WKT
-        "comuna": "Iquique"
-    },
-
-}
-
-
-
 '#EJEMPLO:'
 '''
 COLEGIOS = {
@@ -26,3 +15,14 @@ COLEGIOS = {
     }
 }
 '''
+
+COLEGIOS = {
+    "Campus Huayquique": {
+        "coordenadas": "POINT (-70.13000786156802 -20.269876434271158)",  # Longitud y latitud en formato WKT
+        "comuna": "Iquique"
+    },
+
+}
+
+
+

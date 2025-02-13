@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Crear Planta{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center">Crear Planta</h1>
+    <hr>
+    <form method="POST" action="{{ url_for('main.plantas_crear') }}">
+        <div class="mb-3">
+            <label for="especie" class="form-label">Especie</label>
+            <input type="text" class="form-control" id="especie" name="especie" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="fecha_plantado" class="form-label">Fecha de Plantado</label>
+            <input type="date" class="form-control" id="fecha_plantado" name="fecha_plantado">
+        </div>
+
+        <div class="mb-3">
+            <label for="fecha_cosecha" class="form-label">Fecha de Cosecha</label>
+            <input type="date" class="form-control" id="fecha_cosecha" name="fecha_cosecha">
+        </div>
+
+        <h3>Rangos</h3>
+        <div class="mb-3">
+            <label for="temperatura_min" class="form-label">Temperatura Mínima</label>
+            <div class="input-group">
+                <input type="number" class="form-control" id="temperatura_min" name="temperatura_min" required>
+                <select class="form-control" id="variable_temp_min" name="variable_temp_min">
+                    {% for variable in variables %}
+                    <option value="{{ variable.id }}">{{ variable.unidad_medida }} - {{ variable.nombre }}</option>
+                {% endfor %}
+            </select>
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="temperatura_max" class="form-label">Temperatura Máxima</label>
+            <div class="input-group">
+                <input type="number" class="form-control" id="temperatura_max" name="temperatura_max" required>
+                <select class="form-control" id="variable_temp_max" name="variable_temp_max">
+                    {% for variable in variables %}
+                    <option value="{{ variable.id }}">{{ variable.unidad_medida }} - {{ variable.nombre }}</option>
+                {% endfor %}
+            </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="ph_min" class="form-label">pH Mínimo</label>
+            <div class="input-group">
+                <input type="number" class="form-control" id="ph_min" name="ph_min" step="0.1" min="0" max="14" required>
+                <select class="form-control" id="variable_ph_min" name="variable_ph_min">
+                    {% for variable in variables %}
+                    <option value="{{ variable.id }}">{{ variable.unidad_medida }} - {{ variable.nombre }}</option>
+                {% endfor %}
+            </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="ph_max" class="form-label">pH Máximo</label>
+            <div class="input-group">
+                <input type="number" class="form-control" id="ph_max" name="ph_max" step="0.1" min="0" max="14" required>
+                <select class="form-control" id="variable_ph_max" name="variable_ph_max">
+                    {% for variable in variables %}
+                    <option value="{{ variable.id }}">{{ variable.unidad_medida }} - {{ variable.nombre }}</option>
+                {% endfor %}
+            </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="humedad_min" class="form-label">Humedad Mínima</label>
+            <div class="input-group">
+                <input type="number" class="form-control" id="humedad_min" name="humedad_min" required>
+                <select class="form-control" id="variable_humedad_min" name="variable_humedad_min">
+                    {% for variable in variables %}
+                    <option value="{{ variable.id }}">{{ variable.unidad_medida }} - {{ variable.nombre }}</option>
+                {% endfor %}
+            </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="humedad_max" class="form-label">Humedad Máxima</label>
+            <div class="input-group">
+                <input type="number" class="form-control" id="humedad_max" name="humedad_max" required>
+                <select class="form-control" id="variable_humedad_max" name="variable_humedad_max">
+                    {% for variable in variables %}
+                    <option value="{{ variable.id }}">{{ variable.unidad_medida }} - {{ variable.nombre }}</option>
+                {% endfor %}
+            </select>s
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Crear Planta</button>
+        <a href="{{ url_for('main.plantas_lista') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

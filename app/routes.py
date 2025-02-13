@@ -168,6 +168,83 @@ def escuela_eliminar(id):
     return redirect(url_for('main.escuela_lista'))
 
 
+# -- TABLA PLANTAS --
+@main.route('/plantas')
+def plantas_lista():
+    plantas = Planta.query.all()
+    return render_template('plantas_lista.html', plantas=plantas)
+
+# Crear Planta
+@main.route('/plantas/crear', methods=['GET', 'POST'])
+def plantas_crear():
+    if request.method == 'POST':
+        especie = request.form['especie']
+        fecha_plantado = request.form.get('fecha_plantado')
+        fecha_cosecha = request.form.get('fecha_cosecha')
+
+        # Crear la nueva planta
+        nueva_planta = Planta(especie=especie, fecha_plantado=fecha_plantado, fecha_cosecha=fecha_cosecha)
+        db.session.add(nueva_planta)
+        db.session.commit()
+
+        # Agregar rangos asociados
+        for key in request.form:
+            if key.startswith("temperatura_min_"):
+                index = key.split("_")[-1]
+                temperatura_min = request.form[f"temperatura_min_{index}"]
+                temperatura_max = request.form[f"temperatura_max_{index}"]
+                ph_min = request.form[f"ph_min_{index}"]
+                ph_max = request.form[f"ph_max_{index}"]
+                humedad_min = request.form[f"humedad_min_{index}"]
+                humedad_max = request.form[f"humedad_max_{index}"]
+                id_variable = request.form.get(f"variable_{index}")
+
+                nuevo_rango = Rangos(
+                    temperatura_min=temperatura_min,
+                    temperatura_max=temperatura_max,
+                    ph_min=ph_min,
+                    ph_max=ph_max,
+                    humedad_min=humedad_min,
+                    humedad_max=humedad_max,
+                    id_planta=nueva_planta.id,
+                    id_variable=id_variable
+                )
+                db.session.add(nuevo_rango)
+        
+        db.session.commit()
+        return redirect(url_for('main.plantas_lista'))
+
+    variables = Variables.query.all()  # Asegúrate de que Variables está en tu modelo
+    return render_template('plantas_crear.html', variables=variables)
+
+
+# Editar Planta
+@main.route('/plantas/editar/<int:id>', methods=['GET', 'POST'])
+def plantas_editar(id):
+    planta = Planta.query.get_or_404(id)
+    rangos = Rangos.query.all()  # Obtener los rangos disponibles
+
+    if request.method == 'POST':
+        planta.especie = request.form['especie']
+        planta.fecha_plantado = request.form['fecha_plantado'] or None
+        planta.fecha_cosecha = request.form['fecha_cosecha'] or None
+
+        db.session.commit()
+        flash('Planta actualizada con éxito.', 'success')
+        return redirect(url_for('main.plantas_lista'))
+
+    return render_template('plantas_editar.html', planta=planta, rangos=rangos)
+
+# Eliminar Planta
+@main.route('/plantas/eliminar/<int:id>', methods=['POST'])
+def plantas_eliminar(id):
+    planta = Planta.query.get_or_404(id)
+    db.session.delete(planta)
+    db.session.commit()
+    flash('Planta eliminada con éxito.', 'success')
+    return redirect(url_for('main.plantas_lista'))
+
+
 # -- TABLA VARIABLES --
 @main.route('/variables', methods=['GET'])
 def variables_lista():

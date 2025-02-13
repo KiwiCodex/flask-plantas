@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Planta{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center">Editar Planta</h1>
+    <hr>
+    <form method="POST" action="{{ url_for('main.plantas_editar', id=planta.id) }}">
+        <div class="mb-3">
+            <label for="especie" class="form-label">Especie</label>
+            <input type="text" class="form-control" id="especie" name="especie" value="{{ planta.especie }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="fecha_plantado" class="form-label">Fecha de Plantado</label>
+            <input type="date" class="form-control" id="fecha_plantado" name="fecha_plantado" value="{{ planta.fecha_plantado }}">
+        </div>
+
+        <div class="mb-3">
+            <label for="fecha_cosecha" class="form-label">Fecha de Cosecha</label>
+            <input type="date" class="form-control" id="fecha_cosecha" name="fecha_cosecha" value="{{ planta.fecha_cosecha }}">
+        </div>
+
+        <h3>Rangos</h3>
+        <div class="mb-3">
+            <label for="temperatura_min" class="form-label">Temperatura Mínima:</label>
+            <input type="number" class="form-control" name="temperatura_min" value="{{ rango.temperatura_min }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="temperatura_max" class="form-label">Temperatura Máxima:</label>
+            <input type="number" class="form-control" name="temperatura_max" value="{{ rango.temperatura_max }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="ph_min" class="form-label">PH Mínimo:</label>
+            <input type="number" class="form-control" name="ph_min" step="0.1" min="0" max="14" value="{{ rango.ph_min }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="ph_max" class="form-label">PH Máximo:</label>
+            <input type="number" class="form-control" name="ph_max" step="0.1" min="0" max="14" value="{{ rango.ph_max }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="humedad_min" class="form-label">Humedad Mínima:</label>
+            <input type="number" class="form-control" name="humedad_min" value="{{ rango.humedad_min }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="humedad_max" class="form-label">Humedad Máxima:</label>
+            <input type="number" class="form-control" name="humedad_max" value="{{ rango.humedad_max }}" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        <a href="{{ url_for('main.plantas_lista') }}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

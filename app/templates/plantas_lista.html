@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Plantas{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center">Lista de Plantas</h1>
+    <hr>
+    {% if plantas %}
+    <div class="row justify-content-center">
+        <table class="table table-striped table-responsive text-center">
+            <thead>
+                <tr class="table-dark">
+                    <th>Especie</th>
+                    <th>Fecha de Plantado</th>
+                    <th>Fecha de Cosecha</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for planta in plantas %}
+                    <tr>
+                        <td>{{ planta.especie }}</td>
+                        <td>{{ planta.fecha_plantado or 'No especificado' }}</td>
+                        <td>{{ planta.fecha_cosecha or 'No especificado' }}</td>
+                        <td>
+                            <a href="{{ url_for('main.plantas_editar', id=planta.id) }}" class="btn btn-info btn-sm">Editar</a>
+                            <form action="{{ url_for('main.plantas_eliminar', id=planta.id) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar esta planta?');">Eliminar</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-center mt-3">
+        <a href="{{ url_for('main.plantas_crear') }}" class="btn btn-primary mb-3">Agregar Planta</a>
+    </div>
+    {% else %}
+        <p class="text-center">No hay plantas registradas.</p>
+    {% endif %}
+</div>
+{% endblock %}
