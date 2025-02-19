@@ -20,10 +20,20 @@ def index():
 # Crear un nuevo módulo escolar
 @main.route('/modulos/crear', methods=['GET', 'POST'])
 def modulos_crear():
+# Obtener escuelas con coordenadas en formato correcto (WKT)
+    escuelas = Escuela.query.with_entities(
+        Escuela.id, 
+        Escuela.nombre, 
+        db.func.ST_AsText(Escuela.coordenadas).label("coordenadas")
+    ).all()
+    datalogers = Dataloger.query.all()
+    plantas = Planta.query.all()
+    rangos = Rangos.query.all()
+
     if request.method == 'POST':
         nombre = request.form['nombre']
         ubicacion = request.form.get('ubicacion', None)
-        coordenadas = request.form.get('coordenadas', None)
+        coordenadas = f"POINT({request.form.get('coordenadas', '')})"
         id_escuela = request.form['escuela']
         id_dataloger = request.form['dataloger']
         id_planta = request.form['planta']
@@ -39,20 +49,27 @@ def modulos_crear():
 
         db.session.add(nuevo_modulo)
         db.session.commit()
-        flash("Módulo escolar creado correctamente", "success")
+
+        flash('Módulo escolar creado con éxito.', 'success')
         return redirect(url_for('main.index'))
 
-    escuelas = Escuela.query.all()
-    datalogers = Dataloger.query.all()
-    plantas = Planta.query.all()
-    rangos = Rangos.query.all()
-
-    return render_template('modulos_crear.html', escuelas=escuelas, datalogers=datalogers, plantas=plantas, rangos=rangos)
+    return render_template(
+        'modulos_crear.html',
+        escuelas=escuelas,
+        datalogers=datalogers,
+        plantas=plantas,
+        rangos=rangos
+    )
 
 # Editar un módulo escolar
 @main.route('/modulos/editar/<int:id>', methods=['GET', 'POST'])
 def modulos_editar(id):
-    modulo = ModuloEscolar.query.get_or_404(id)
+    modulo = ModuloEscolar.query.get_or_404(id)  # Obtenemos el objeto modificable
+
+    # Convertir coordenadas a formato WKT
+    coordenadas_wkt = db.session.query(
+        db.func.ST_AsText(ModuloEscolar.coordenadas)
+    ).filter(ModuloEscolar.id == id).scalar()
 
     if request.method == 'POST':
         modulo.nombre = request.form['nombre']
@@ -72,6 +89,27 @@ def modulos_editar(id):
     rangos = Rangos.query.all()
 
     return render_template('modulos_editar.html', modulo=modulo, escuelas=escuelas, datalogers=datalogers, plantas=plantas, rangos=rangos)
+
+@main.route('/modulos/eliminar/<int:id>', methods=['POST'])
+def modulos_eliminar(id):
+    modulo = ModuloEscolar.query.get_or_404(id)
+    
+    db.session.delete(modulo)
+    db.session.commit()
+
+    flash(f'El módulo {modulo.nombre} ha sido eliminado correctamente.', 'success')
+    
+    return redirect(url_for('main.index'))
+
+
+@main.route('/modulos/simulacion/<int:id>', methods=['GET'])
+def modulos_simulacion(id):
+    modulo = ModuloEscolar.query.get_or_404(id)
+    
+    # Aquí puedes definir la lógica de simulación (por ahora, solo redireccionamos con un mensaje)
+    flash(f'Simulación iniciada para el módulo {modulo.nombre}.', 'info')
+    
+    return redirect(url_for('main.index'))
 
 
 # -- TABLA ESCUELA --

@@ -11,26 +11,29 @@
             <label for="nombre" class="form-label">Nombre</label>
             <input type="text" class="form-control" id="nombre" name="nombre" required>
         </div>
-        
-        <div class="mb-3">
-            <label for="ubicacion" class="form-label">Ubicación</label>
-            <input type="text" class="form-control" id="ubicacion" name="ubicacion">
-        </div>
 
         <div class="mb-3">
-            <label for="coordenadas" class="form-label">Coordenadas</label>
-            <input type="text" class="form-control" id="coordenadas" name="coordenadas">
+            <label for="ubicacion" class="form-label">Ubicación (Calle)</label>
+            <input type="text" class="form-control" id="ubicacion" name="ubicacion">
         </div>
         
         <div class="mb-3">
-            <label for="escuela" class="form-label">Escuela</label>
+            <label for="escuela" class="form-label">Escuela perteneciente</label>
             <select class="form-control" id="escuela" name="escuela" required>
+                <option value="" selected disabled>Seleccione una escuela</option>
                 {% for escuela in escuelas %}
-                    <option value="{{ escuela.id }}">{{ escuela.nombre }}</option>
+                    <option value="{{ escuela.id }}" data-coordenadas="{{ escuela.coordenadas }}">
+                        {{ escuela.nombre }}
+                    </option>
                 {% endfor %}
             </select>
         </div>
 
+        <div class="mb-3">
+            <label for="coordenadas" class="form-label">Coordenadas</label>
+            <input type="text" class="form-control" id="coordenadas" name="coordenadas" readonly>
+        </div>
+        
         <div class="mb-3">
             <label for="dataloger" class="form-label">Dataloger</label>
             <select class="form-control" id="dataloger" name="dataloger" required>
@@ -48,32 +51,27 @@
                 {% endfor %}
             </select>
         </div>
-        
-        <div class="mb-3">
-            <label for="fecha_plantado" class="form-label">Fecha de Plantado</label>
-            <input type="date" class="form-control" id="fecha_plantado" name="fecha_plantado">
-        </div>
 
-        <div class="mb-3">
-            <label for="fecha_cosecha" class="form-label">Fecha de Cosecha</label>
-            <input type="date" class="form-control" id="fecha_cosecha" name="fecha_cosecha">
-        </div>
-
-        <div class="mb-3">
-            <label for="rango" class="form-label">Rangos</label>
-            <select class="form-control" id="rango" name="rango">
-                {% for rango in rangos %}
-                    <option value="{{ rango.id }}">
-                        Temperatura: {{ rango.temperatura_min }}°C - {{ rango.temperatura_max }}°C, 
-                        PH: {{ rango.ph_min }} - {{ rango.ph_max }}, 
-                        Humedad: {{ rango.humedad_min }}% - {{ rango.humedad_max }}%
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        
         <button type="submit" class="btn btn-primary">Crear Módulo</button>
         <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
+
+{% block scripts %}
+
+<script>
+    document.getElementById('escuela').addEventListener('change', function() {
+        var selectedOption = this.options[this.selectedIndex];
+        var coordenadas = selectedOption.getAttribute('data-coordenadas');
+    
+        if (coordenadas) {
+            // Extrae solo los valores de latitud y longitud
+            coordenadas = coordenadas.replace('POINT(', '').replace(')', '');
+        }
+    
+        document.getElementById('coordenadas').value = coordenadas || '';
+    });
+</script>
+{% endblock %}
+
 {% endblock %}

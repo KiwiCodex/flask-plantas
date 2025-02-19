@@ -18,11 +18,6 @@
         </div>
 
         <div class="mb-3">
-            <label for="coordenadas" class="form-label">Coordenadas</label>
-            <input type="text" class="form-control" id="coordenadas" name="coordenadas" value="{{ modulo.coordenadas }}">
-        </div>
-        
-        <div class="mb-3">
             <label for="escuela" class="form-label">Escuela</label>
             <select class="form-control" id="escuela" name="escuela" required>
                 {% for escuela in escuelas %}
@@ -30,6 +25,13 @@
                 {% endfor %}
             </select>
         </div>
+
+        <div class="mb-3">
+            <label for="coordenadas" class="form-label">Coordenadas</label>
+            <input type="text" class="form-control" id="coordenadas" name="coordenadas" value="{{ modulo.coordenadas }}">
+        </div>
+        
+
 
         <div class="mb-3">
             <label for="dataloger" class="form-label">Dataloger</label>
@@ -49,31 +51,25 @@
             </select>
         </div>
         
-        <div class="mb-3">
-            <label for="fecha_plantado" class="form-label">Fecha de Plantado</label>
-            <input type="date" class="form-control" id="fecha_plantado" name="fecha_plantado" value="{{ modulo.planta.fecha_plantado }}">
-        </div>
-
-        <div class="mb-3">
-            <label for="fecha_cosecha" class="form-label">Fecha de Cosecha</label>
-            <input type="date" class="form-control" id="fecha_cosecha" name="fecha_cosecha" value="{{ modulo.planta.fecha_cosecha }}">
-        </div>
-
-        <div class="mb-3">
-            <label for="rango" class="form-label">Rangos</label>
-            <select class="form-control" id="rango" name="rango">
-                {% for rango in rangos %}
-                    <option value="{{ rango.id }}" {% if rango.id == modulo.rango.id %}selected{% endif %}>
-                        Temperatura: {{ rango.temperatura_min }}°C - {{ rango.temperatura_max }}°C, 
-                        PH: {{ rango.ph_min }} - {{ rango.ph_max }}, 
-                        Humedad: {{ rango.humedad_min }}% - {{ rango.humedad_max }}%
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-        
         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
         <a href="{{ url_for('main.index') }}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
+
+{% block scripts %}
+
+<script>
+    document.getElementById('escuela').addEventListener('change', function() {
+        var selectedOption = this.options[this.selectedIndex];
+        var coordenadas = selectedOption.getAttribute('data-coordenadas');
+    
+        if (coordenadas) {
+            // Extrae solo los valores de latitud y longitud
+            coordenadas = coordenadas.replace('POINT(', '').replace(')', '');
+        }
+    
+        document.getElementById('coordenadas').value = coordenadas || '';
+    });
+</script>
+{% endblock %}
 {% endblock %}
