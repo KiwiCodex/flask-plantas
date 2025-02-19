@@ -228,6 +228,11 @@ def plantas_editar(id):
     planta = Planta.query.get_or_404(id)
     variables = Variables.query.all()
 
+    # Obtener rangos existentes o definir valores por defecto
+    rango = Rangos.query.filter_by(id_planta=planta.id).first()
+    if not rango:
+        rango = Rangos(temperatura_min=0, temperatura_max=0, ph_min=0, ph_max=0, humedad_min=0, humedad_max=0)
+
     if request.method == 'POST':
         planta.especie = request.form['especie']
         planta.fecha_plantado = request.form.get('fecha_plantado') or None
@@ -236,23 +241,43 @@ def plantas_editar(id):
         id_variables = set(map(int, request.form.getlist('id_variables')))
         planta.variables = Variables.query.filter(Variables.id.in_(id_variables)).all()
 
+        # Actualizar o crear el registro de Rangos
+        rango = Rangos.query.filter_by(id_planta=planta.id).first()
+        if not rango:
+            rango = Rangos(id_planta=planta.id)  # Crear nuevo si no existe
+            db.session.add(rango)
+
+        rango.temperatura_min = request.form['temperatura_min']
+        rango.temperatura_max = request.form['temperatura_max']
+        rango.ph_min = request.form['ph_min']
+        rango.ph_max = request.form['ph_max']
+        rango.humedad_min = request.form['humedad_min']
+        rango.humedad_max = request.form['humedad_max']
+
+        # Guardar cambios
         db.session.commit()
-        flash('Planta actualizada con éxito.', 'success')
+        flash('Planta y rangos actualizados con éxito.', 'success')
         return redirect(url_for('main.plantas_lista'))
 
-    variables_seleccionadas = [v.id for v in planta.variables]
-    return render_template('plantas_editar.html', planta=planta, variables=variables, variables_seleccionadas=variables_seleccionadas)
 
+    variables_seleccionadas = [v.id for v in planta.variables]
+    
+    return render_template('plantas_editar.html', planta=planta, variables=variables, variables_seleccionadas=variables_seleccionadas, rango=rango)
 
 # Eliminar Planta
 @main.route('/plantas/eliminar/<int:id>', methods=['POST'])
 def plantas_eliminar(id):
     planta = Planta.query.get_or_404(id)
+
+    # Eliminar los rangos asociados a la planta
+    Rangos.query.filter_by(id_planta=planta.id).delete()
+
+    # Ahora eliminar la planta
     db.session.delete(planta)
     db.session.commit()
-    flash('Planta eliminada con éxito.', 'success')
-    return redirect(url_for('main.plantas_lista'))
 
+    flash('Planta y sus rangos eliminados con éxito.', 'success')
+    return redirect(url_for('main.plantas_lista'))
 
 # -- TABLA VARIABLES --
 @main.route('/variables', methods=['GET'])
