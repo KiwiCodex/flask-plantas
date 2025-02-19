@@ -18,8 +18,8 @@ def create_app():
     app.config['MYSQL_HOST'] = 'localhost'
     app.config['MYSQL_USER'] = 'root'
     app.config['MYSQL_PASSWORD'] = ''
-    app.config['MYSQL_DB'] = 'modulos_db'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/modulos_db'
+    app.config['MYSQL_DB'] = 'huertos_db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:@localhost/huertos_db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Inicializar extensiones

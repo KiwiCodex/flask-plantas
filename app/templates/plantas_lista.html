@@ -3,7 +3,7 @@
 {% block title %}Lista de Plantas{% endblock %}
 
 {% block content %}
-<div class="container">
+<div class="container mt-5">
     <h1 class="text-center">Lista de Plantas</h1>
     <hr>
     {% if plantas %}
@@ -14,6 +14,7 @@
                     <th>Especie</th>
                     <th>Fecha de Plantado</th>
                     <th>Fecha de Cosecha</th>
+                    <th>Rangos</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -24,6 +25,22 @@
                         <td>{{ planta.fecha_plantado or 'No especificado' }}</td>
                         <td>{{ planta.fecha_cosecha or 'No especificado' }}</td>
                         <td>
+                            {% if planta.rangos %}
+                                <ul class="list-unstyled">
+                                    {% for rango in planta.rangos %}
+                                        <li>
+                                            <span style="font-weight:bold">Temperatura</span>: {{ rango.temperatura_min }}°C - {{ rango.temperatura_max }}°C | 
+                                            <span style="font-weight:bold">pH</span>: {{ rango.ph_min }} - {{ rango.ph_max }} | 
+                                            <span style="font-weight:bold">Humedad</span>: {{ rango.humedad_min }}% - {{ rango.humedad_max }}%
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            {% else %}
+                                <span class="text-muted">No hay rangos registrados</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
                             <a href="{{ url_for('main.plantas_editar', id=planta.id) }}" class="btn btn-info btn-sm">Editar</a>
                             <form action="{{ url_for('main.plantas_eliminar', id=planta.id) }}" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Seguro que deseas eliminar esta planta?');">Eliminar</button>
@@ -32,13 +49,14 @@
                     </tr>
                 {% endfor %}
             </tbody>
+            
         </table>
-    </div>
-    <div class="d-flex justify-content-center mt-3">
-        <a href="{{ url_for('main.plantas_crear') }}" class="btn btn-primary mb-3">Agregar Planta</a>
     </div>
     {% else %}
         <p class="text-center">No hay plantas registradas.</p>
     {% endif %}
+    <div class="d-flex justify-content-center mt-3">
+        <a href="{{ url_for('main.plantas_crear') }}" class="btn btn-primary mb-3">Agregar Planta</a>
+    </div>
 </div>
 {% endblock %}

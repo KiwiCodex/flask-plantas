@@ -174,66 +174,75 @@ def plantas_lista():
     plantas = Planta.query.all()
     return render_template('plantas_lista.html', plantas=plantas)
 
-# Crear Planta
 @main.route('/plantas/crear', methods=['GET', 'POST'])
 def plantas_crear():
     if request.method == 'POST':
         especie = request.form['especie']
-        fecha_plantado = request.form.get('fecha_plantado')
-        fecha_cosecha = request.form.get('fecha_cosecha')
+        fecha_plantado = request.form.get('fecha_plantado') or None
+        fecha_cosecha = request.form.get('fecha_cosecha') or None
 
-        # Crear la nueva planta
-        nueva_planta = Planta(especie=especie, fecha_plantado=fecha_plantado, fecha_cosecha=fecha_cosecha)
+        # Crear la planta primero
+        nueva_planta = Planta(
+            especie=especie, 
+            fecha_plantado=fecha_plantado, 
+            fecha_cosecha=fecha_cosecha
+        )
         db.session.add(nueva_planta)
-        db.session.commit()
+        db.session.commit()  # Guardamos para obtener el ID de la planta
 
-        # Agregar rangos asociados
-        for key in request.form:
-            if key.startswith("temperatura_min_"):
-                index = key.split("_")[-1]
-                temperatura_min = request.form[f"temperatura_min_{index}"]
-                temperatura_max = request.form[f"temperatura_max_{index}"]
-                ph_min = request.form[f"ph_min_{index}"]
-                ph_max = request.form[f"ph_max_{index}"]
-                humedad_min = request.form[f"humedad_min_{index}"]
-                humedad_max = request.form[f"humedad_max_{index}"]
-                id_variable = request.form.get(f"variable_{index}")
+        # Obtener los valores de las variables
+        id_variable_temp = request.form.get("variable_temp")
+        id_variable_ph = request.form.get("variable_ph")
+        id_variable_humedad = request.form.get("variable_humedad")
 
-                nuevo_rango = Rangos(
-                    temperatura_min=temperatura_min,
-                    temperatura_max=temperatura_max,
-                    ph_min=ph_min,
-                    ph_max=ph_max,
-                    humedad_min=humedad_min,
-                    humedad_max=humedad_max,
-                    id_planta=nueva_planta.id,
-                    id_variable=id_variable
-                )
-                db.session.add(nuevo_rango)
-        
-        db.session.commit()
+        # Crear un solo registro en Rangos con todos los valores
+        nuevo_rango = Rangos(
+            id_planta=nueva_planta.id,
+            temperatura_min=float(request.form.get("temperatura_min")) if request.form.get("temperatura_min") else None,
+            temperatura_max=float(request.form.get("temperatura_max")) if request.form.get("temperatura_max") else None,
+            ph_min=float(request.form.get("ph_min")) if request.form.get("ph_min") else None,
+            ph_max=float(request.form.get("ph_max")) if request.form.get("ph_max") else None,
+            humedad_min=float(request.form.get("humedad_min")) if request.form.get("humedad_min") else None,
+            humedad_max=float(request.form.get("humedad_max")) if request.form.get("humedad_max") else None
+        )
+        db.session.add(nuevo_rango)
+
+        # Asignar variables a la planta en la tabla intermedia
+        if id_variable_temp:
+            nueva_planta.variables.append(Variables.query.get(int(id_variable_temp)))
+        if id_variable_ph:
+            nueva_planta.variables.append(Variables.query.get(int(id_variable_ph)))
+        if id_variable_humedad:
+            nueva_planta.variables.append(Variables.query.get(int(id_variable_humedad)))
+
+        db.session.commit()  # Guardar todos los cambios en la base de datos
+
+        flash('Planta creada con éxito.', 'success')
         return redirect(url_for('main.plantas_lista'))
 
-    variables = Variables.query.all()  # Asegúrate de que Variables está en tu modelo
+    variables = Variables.query.all()
     return render_template('plantas_crear.html', variables=variables)
 
-
-# Editar Planta
 @main.route('/plantas/editar/<int:id>', methods=['GET', 'POST'])
 def plantas_editar(id):
     planta = Planta.query.get_or_404(id)
-    rangos = Rangos.query.all()  # Obtener los rangos disponibles
+    variables = Variables.query.all()
 
     if request.method == 'POST':
         planta.especie = request.form['especie']
-        planta.fecha_plantado = request.form['fecha_plantado'] or None
-        planta.fecha_cosecha = request.form['fecha_cosecha'] or None
+        planta.fecha_plantado = request.form.get('fecha_plantado') or None
+        planta.fecha_cosecha = request.form.get('fecha_cosecha') or None
+
+        id_variables = set(map(int, request.form.getlist('id_variables')))
+        planta.variables = Variables.query.filter(Variables.id.in_(id_variables)).all()
 
         db.session.commit()
         flash('Planta actualizada con éxito.', 'success')
         return redirect(url_for('main.plantas_lista'))
 
-    return render_template('plantas_editar.html', planta=planta, rangos=rangos)
+    variables_seleccionadas = [v.id for v in planta.variables]
+    return render_template('plantas_editar.html', planta=planta, variables=variables, variables_seleccionadas=variables_seleccionadas)
+
 
 # Eliminar Planta
 @main.route('/plantas/eliminar/<int:id>', methods=['POST'])
