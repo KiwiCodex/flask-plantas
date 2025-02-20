@@ -28,7 +28,7 @@
 
         <div class="mb-3">
             <label for="coordenadas" class="form-label">Coordenadas</label>
-            <input type="text" class="form-control" id="coordenadas" name="coordenadas" value="{{ modulo.coordenadas }}">
+            <input type="text" class="form-control" id="coordenadas" name="coordenadas" value="{{ coordenadas_wkt[6:-1] if coordenadas_wkt else '' }}">
         </div>
         
 

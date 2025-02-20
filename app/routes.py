@@ -5,6 +5,7 @@ from colegios import COLEGIOS
 from geoalchemy2.shape import from_shape
 from shapely.geometry import Point
 from .api_client import obtener_datos
+from sqlalchemy import func
 
 
 # Define el blueprint
@@ -74,7 +75,9 @@ def modulos_editar(id):
     if request.method == 'POST':
         modulo.nombre = request.form['nombre']
         modulo.ubicacion = request.form.get('ubicacion', None)
-        modulo.coordenadas = request.form.get('coordenadas', None)
+        coordenadas = request.form.get('coordenadas', None)
+        if coordenadas:
+            modulo.coordenadas = func.ST_GeomFromText(f"POINT({coordenadas})")
         modulo.id_escuela = request.form['escuela']
         modulo.id_dataloger = request.form['dataloger']
         modulo.id_planta = request.form['planta']
@@ -88,25 +91,34 @@ def modulos_editar(id):
     plantas = Planta.query.all()
     rangos = Rangos.query.all()
 
-    return render_template('modulos_editar.html', modulo=modulo, escuelas=escuelas, datalogers=datalogers, plantas=plantas, rangos=rangos)
+    return render_template(
+        'modulos_editar.html',
+        modulo=modulo,
+        escuelas=escuelas,
+        datalogers=datalogers,
+        plantas=plantas,
+        rangos=rangos,
+        coordenadas_wkt=coordenadas_wkt  # <-- Asegúrate de pasarlo a la plantilla
+    )
 
 @main.route('/modulos/eliminar/<int:id>', methods=['POST'])
 def modulos_eliminar(id):
     modulo = ModuloEscolar.query.get_or_404(id)
-    
-    db.session.delete(modulo)
-    db.session.commit()
 
-    flash(f'El módulo {modulo.nombre} ha sido eliminado correctamente.', 'success')
-    
+    try:
+        db.session.delete(modulo)
+        db.session.commit()
+        flash(f'El módulo {modulo.nombre} ha sido eliminado correctamente.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar el módulo: {str(e)}', 'danger')
+
     return redirect(url_for('main.index'))
-
 
 @main.route('/modulos/simulacion/<int:id>', methods=['GET'])
 def modulos_simulacion(id):
     modulo = ModuloEscolar.query.get_or_404(id)
     
-    # Aquí puedes definir la lógica de simulación (por ahora, solo redireccionamos con un mensaje)
     flash(f'Simulación iniciada para el módulo {modulo.nombre}.', 'info')
     
     return redirect(url_for('main.index'))
