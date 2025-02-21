@@ -11,11 +11,20 @@
 <div class="wrap">
     <div class="state-container text-center">
         <div class="box {{ estado_color }}" id="estado-planta">
-            {% if estado_color == 'green' %} 😊 ¡Todo bien!
-            {% elif estado_color == 'yellow' %} 😐 En cuidado
-            {% elif estado_color == 'orange' %} 😟 Preocupado
-            {% else %} 😭 Necesito ayuda
-            {% endif %}
+            <span class="emoji">
+                {% if estado_color == 'green' %} 😊
+                {% elif estado_color == 'yellow' %} 😐
+                {% elif estado_color == 'orange' %} 😟
+                {% else %} 😭
+                {% endif %}
+            </span>
+            <span class="texto">
+                {% if estado_color == 'green' %} ¡Todo bien!
+                {% elif estado_color == 'yellow' %} En cuidado
+                {% elif estado_color == 'orange' %} Preocupado
+                {% else %} Necesito ayuda
+                {% endif %}
+            </span>
         </div>
     </div>
 </div>
@@ -32,8 +41,14 @@
         <tbody>
             {% for nombre, valor in valores_simulados.items() %}
             <tr>
-                <td>{{ rangos_dict[nombre]["min"] | round(1) }} - {{ rangos_dict[nombre]["max"] | round(1) }} {{ rangos_dict[nombre]["unidad"] }} ({{ nombre }})</td>
-                <td><strong>{{ valor | round(1) }}</strong> {{ rangos_dict[nombre]["unidad"] }} ({{ nombre }})</td>
+                <td>
+                    {{ rangos_dict[nombre]["min"] | round(1) }} - {{ rangos_dict[nombre]["max"] | round(1) }} 
+                    {{ rangos_dict[nombre].get("unidad", "Sin unidad") }} ({{ nombre }})
+                </td>
+                <td>
+                    <strong>{{ valor | round(1) }}</strong> 
+                    {{ rangos_dict[nombre].get("unidad", "Sin unidad") }}
+                </td>
                 <td>
                     {% if valor < rangos_dict[nombre]["min"] or valor > rangos_dict[nombre]["max"] %}
                         ⚠️ Alerta
@@ -48,6 +63,7 @@
         </tbody>
     </table>
 </div>
+
 
 
 

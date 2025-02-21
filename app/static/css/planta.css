@@ -1,31 +1,36 @@
-
 /* Bocadillos de estado */
 .box {
     width: 320px;
     height: 120px;
     margin: 20px auto;
     text-align: center;
-    line-height: 1.5;
-    font-size: 1.5em; /* Texto más grande */
     font-weight: bold;
     color: white;
     border-radius: 15px;
     display: flex;
+    flex-direction: column; /* Asegura que los elementos estén en columna */
     align-items: center;
     justify-content: center;
     padding: 10px;
     box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
 }
 
-.green { background-color: green; }
-.yellow { background-color: yellow; color: black; }
-.orange { background-color: orange; }
-.red { background-color: red; }
+.box span.emoji {
+    font-size: 4em; /* Hace el emoji más grande */
+    display: block; /* Permite que esté encima del texto */
+    margin-bottom: 5px; /* Espaciado entre el emoji y el texto */
+}
 
-/* Emoticonos más grandes */
-.box span {
-    font-size: 2.5em; /* Tamaño más grande */
-    margin-right: 10px;
+.green { background-color: green; color: white; }
+.yellow { background-color: yellow; color: black; }
+.orange { background-color: orange; color: white; }
+.red { background-color: red; color: white; }
+
+.box span.texto {
+    font-size: 1.2em; /* Reduce el tamaño del mensaje */
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 /* Estructura flexible */
@@ -37,14 +42,15 @@
     margin: 40px 0;
 }
 
-.state-container, .plant-container {
-    width: 320px; /* Ajuste al tamaño del bocadillo */
-    margin: 10px;
-    padding: 20px;
-    border: 2px solid #ccc;
-    border-radius: 10px;
-    background-color: #fff;
-    position: relative;
+.state-container {
+    width: 320px; /* Mismo ancho que .box */
+    margin: 0 auto; /* Centrar en la página */
+    padding: 0; /* Eliminar padding extra */
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centrar el contenido */
+    border: none; /* Opcional: si no quieres borde */
+    background-color: transparent; /* Para evitar cajas visibles */
 }
 
 /* Botón de generación */

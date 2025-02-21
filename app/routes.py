@@ -129,48 +129,61 @@ def modulos_simulacion(id):
         flash("No hay rangos definidos para esta planta.", "warning")
         return redirect(url_for("main.index"))  # Reemplaza con la ruta correcta
 
-    # Crear diccionario de rangos con valores por defecto si son None
+    # 🔹 Obtener unidades desde la base de datos (si Rangos tiene relación con Variables)
+    variables = {
+        "Temperatura": Variables.query.filter_by(nombre="Temperatura").first(),
+        "pH": Variables.query.filter_by(nombre="pH").first(),
+        "Humedad": Variables.query.filter_by(nombre="Humedad").first()
+    }
+
+    # 🔹 Crear diccionario de rangos con unidades de medida
     rangos_dict = {
         "Temperatura": {
             "min": rangos.temperatura_min if rangos.temperatura_min is not None else 15.0,
-            "max": rangos.temperatura_max if rangos.temperatura_max is not None else 30.0
+            "max": rangos.temperatura_max if rangos.temperatura_max is not None else 30.0,
+            "unidad": variables["Temperatura"].unidad if variables["Temperatura"] else "°C"
         },
         "pH": {
             "min": rangos.ph_min if rangos.ph_min is not None else 6.0,
-            "max": rangos.ph_max if rangos.ph_max is not None else 7.5
+            "max": rangos.ph_max if rangos.ph_max is not None else 7.5,
+            "unidad": variables["pH"].unidad if variables["pH"] else "pH"
         },
         "Humedad": {
             "min": rangos.humedad_min if rangos.humedad_min is not None else 40.0,
-            "max": rangos.humedad_max if rangos.humedad_max is not None else 80.0
+            "max": rangos.humedad_max if rangos.humedad_max is not None else 80.0,
+            "unidad": variables["Humedad"].unidad if variables["Humedad"] else "%"
         }
     }
 
-    # Generar valores aleatorios dentro de un margen
+    # 🔹 Generar valores simulados
     valores_simulados = {
         "Temperatura": round(random.uniform(rangos_dict["Temperatura"]["min"] - 5, rangos_dict["Temperatura"]["max"] + 5), 1),
         "pH": round(random.uniform(rangos_dict["pH"]["min"] - 2, rangos_dict["pH"]["max"] + 2), 1),
         "Humedad": round(random.uniform(rangos_dict["Humedad"]["min"] - 10, rangos_dict["Humedad"]["max"] + 10), 1)
     }
-    
-    # Determinar el estado general de la planta
-    estados = []
+
+    # 🔹 Determinar el estado de la planta
+# 🔹 Determinar el estado de la planta
+    num_alertas = 0
+    num_precauciones = 0
+
     for var, valores in rangos_dict.items():
         if valores_simulados[var] < valores["min"] or valores_simulados[var] > valores["max"]:
-            estados.append("alerta")
+            num_alertas += 1
         elif abs(valores_simulados[var] - valores["min"]) <= 2 or abs(valores_simulados[var] - valores["max"]) <= 2:
-            estados.append("precaucion")
-        else:
-            estados.append("ok")
-    
-    if "alerta" in estados:
-        estado_color = "red"
-    elif "precaucion" in estados:
-        estado_color = "yellow"
-    else:
-        estado_color = "green"
+            num_precauciones += 1
+
+    # 🔹 Nueva lógica de color basada en el número de alertas/precauciones
+    if num_alertas + num_precauciones == 3:  
+        estado_color = "red"     # Todas las variables en alerta o precaución
+    elif num_alertas + num_precauciones == 2:  
+        estado_color = "orange"  # Dos variables en alerta/precaución
+    elif num_alertas + num_precauciones == 1:  
+        estado_color = "yellow"  # Solo una variable en alerta/precaución
+    else:  
+        estado_color = "green"   # Todo en orden
     
     return render_template("modulos_simulacion.html", modulo=modulo, planta=planta, valores_simulados=valores_simulados, estado_color=estado_color, rangos_dict=rangos_dict, abs=abs)
-
 
 # -- TABLA ESCUELA --
 @main.route('/escuelas')
