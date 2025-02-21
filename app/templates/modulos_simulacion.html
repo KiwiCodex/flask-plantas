@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+
+
+{% block title %}Simulación de {{ modulo.nombre }}{% endblock %}
+
+{% block content %}
+<h1 class="text-center">Simulación del Módulo: {{ modulo.nombre }}</h1>
+<h2 class="text-center">Planta: {{ modulo.planta.especie }}</h2>
+
+<div class="wrap">
+    <div class="state-container text-center">
+        <div class="box {{ estado_color }}" id="estado-planta">
+            {% if estado_color == 'green' %} 😊 ¡Todo bien!
+            {% elif estado_color == 'yellow' %} 😐 En cuidado
+            {% elif estado_color == 'orange' %} 😟 Preocupado
+            {% else %} 😭 Necesito ayuda
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <table class="table table-bordered text-center">
+        <thead class="table-dark">
+            <tr>
+                <th>Rango Ideal</th>
+                <th>Valor Actual</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nombre, valor in valores_simulados.items() %}
+            <tr>
+                <td>{{ rangos_dict[nombre]["min"] | round(1) }} - {{ rangos_dict[nombre]["max"] | round(1) }} {{ rangos_dict[nombre]["unidad"] }} ({{ nombre }})</td>
+                <td><strong>{{ valor | round(1) }}</strong> {{ rangos_dict[nombre]["unidad"] }} ({{ nombre }})</td>
+                <td>
+                    {% if valor < rangos_dict[nombre]["min"] or valor > rangos_dict[nombre]["max"] %}
+                        ⚠️ Alerta
+                    {% elif abs(valor - rangos_dict[nombre]["min"]) <= 2 or abs(valor - rangos_dict[nombre]["max"]) <= 2 %}
+                        ⚠️ Precaución
+                    {% else %}
+                        ✅ Ok
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+<div class="d-flex justify-content-center mt-4">
+    <button class="btn btn-primary" onclick="generarNuevosValores()">Generar Nuevos Valores</button>
+    <a href="{{ url_for('main.index') }}" class="btn btn-secondary ms-2">Volver al Inicio</a>
+</div>
+
+<script>
+    function generarNuevosValores() {
+        location.href = "{{ url_for('main.modulos_simulacion', id=modulo.id) }}";
+    }
+</script>
+{% endblock %}

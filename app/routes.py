@@ -6,6 +6,7 @@ from geoalchemy2.shape import from_shape
 from shapely.geometry import Point
 from .api_client import obtener_datos
 from sqlalchemy import func
+import random
 
 
 # Define el blueprint
@@ -115,13 +116,60 @@ def modulos_eliminar(id):
 
     return redirect(url_for('main.index'))
 
+
 @main.route('/modulos/simulacion/<int:id>', methods=['GET'])
 def modulos_simulacion(id):
     modulo = ModuloEscolar.query.get_or_404(id)
+    planta = Planta.query.get_or_404(modulo.id_planta)
+
+    # Obtener los rangos de la planta
+    rangos = Rangos.query.filter_by(id_planta=planta.id).first()   
+
+    if rangos is None:
+        flash("No hay rangos definidos para esta planta.", "warning")
+        return redirect(url_for("main.index"))  # Reemplaza con la ruta correcta
+
+    # Crear diccionario de rangos con valores por defecto si son None
+    rangos_dict = {
+        "Temperatura": {
+            "min": rangos.temperatura_min if rangos.temperatura_min is not None else 15.0,
+            "max": rangos.temperatura_max if rangos.temperatura_max is not None else 30.0
+        },
+        "pH": {
+            "min": rangos.ph_min if rangos.ph_min is not None else 6.0,
+            "max": rangos.ph_max if rangos.ph_max is not None else 7.5
+        },
+        "Humedad": {
+            "min": rangos.humedad_min if rangos.humedad_min is not None else 40.0,
+            "max": rangos.humedad_max if rangos.humedad_max is not None else 80.0
+        }
+    }
+
+    # Generar valores aleatorios dentro de un margen
+    valores_simulados = {
+        "Temperatura": round(random.uniform(rangos_dict["Temperatura"]["min"] - 5, rangos_dict["Temperatura"]["max"] + 5), 1),
+        "pH": round(random.uniform(rangos_dict["pH"]["min"] - 2, rangos_dict["pH"]["max"] + 2), 1),
+        "Humedad": round(random.uniform(rangos_dict["Humedad"]["min"] - 10, rangos_dict["Humedad"]["max"] + 10), 1)
+    }
     
-    flash(f'Simulación iniciada para el módulo {modulo.nombre}.', 'info')
+    # Determinar el estado general de la planta
+    estados = []
+    for var, valores in rangos_dict.items():
+        if valores_simulados[var] < valores["min"] or valores_simulados[var] > valores["max"]:
+            estados.append("alerta")
+        elif abs(valores_simulados[var] - valores["min"]) <= 2 or abs(valores_simulados[var] - valores["max"]) <= 2:
+            estados.append("precaucion")
+        else:
+            estados.append("ok")
     
-    return redirect(url_for('main.index'))
+    if "alerta" in estados:
+        estado_color = "red"
+    elif "precaucion" in estados:
+        estado_color = "yellow"
+    else:
+        estado_color = "green"
+    
+    return render_template("modulos_simulacion.html", modulo=modulo, planta=planta, valores_simulados=valores_simulados, estado_color=estado_color, rangos_dict=rangos_dict, abs=abs)
 
 
 # -- TABLA ESCUELA --
