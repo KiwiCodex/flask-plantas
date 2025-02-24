@@ -380,15 +380,25 @@ def plantas_editar(id):
 def plantas_eliminar(id):
     planta = Planta.query.get_or_404(id)
 
-    # Eliminar los rangos asociados a la planta
-    Rangos.query.filter_by(id_planta=planta.id).delete()
+    try:
+        # Eliminar los rangos asociados a la planta
+        Rangos.query.filter_by(id_planta=planta.id).delete()
 
-    # Ahora eliminar la planta
-    db.session.delete(planta)
-    db.session.commit()
+        # Desvincular variables de la planta antes de eliminar
+        planta.variables.clear()
+        db.session.commit()
 
-    flash('Planta y sus rangos eliminados con éxito.', 'success')
-    return redirect(url_for('main.plantas_lista'))
+        # Ahora eliminar la planta
+        db.session.delete(planta)
+        db.session.commit()
+
+        flash('Planta y sus rangos eliminados con éxito.', 'success')
+        return '', 204  # Respuesta exitosa sin contenido
+
+    except Exception as e:
+        db.session.rollback()
+        flash('Error al eliminar la planta. Verifique dependencias.', 'danger')
+        return '', 400  # Código de error
 
 # -- TABLA VARIABLES --
 @main.route('/variables', methods=['GET'])
@@ -425,14 +435,20 @@ def variables_editar(id):
 
     return render_template('variables_editar.html', variable=variable)
 
-@main.route('/variables/eliminar/<int:id>', methods=['GET'])
+@main.route('/variables/eliminar/<int:id>', methods=['POST'])
 def variables_eliminar(id):
     variable = Variables.query.get_or_404(id)
-    db.session.delete(variable)
-    db.session.commit()
-
-    flash("Variable eliminada correctamente", "success")
-    return redirect(url_for('main.variables_lista'))
+    
+    try:
+        db.session.delete(variable)
+        db.session.commit()
+        flash("Variable eliminada correctamente", "success")
+        return '', 204  # Respuesta vacía con código 204 (No Content)
+    
+    except Exception as e:
+        db.session.rollback()
+        flash("Error al eliminar la variable. Puede estar en uso.", "danger")
+        return '', 400  # Código de error HTTP 400 (Bad Request)
 
 
 # -- TABLA DATALOGER --
@@ -480,15 +496,18 @@ def datalogers_editar(id):
 
 @main.route('/datalogers/eliminar/<int:id>', methods=['POST'])
 def datalogers_eliminar(id):
-    dataloger = Dataloger.query.get_or_404(id)
-    db.session.delete(dataloger)
-    db.session.commit()
-
-    flash("Dataloger eliminado correctamente", "success")
-    return redirect(url_for('main.datalogers_lista'))
-
-
-
+    datalogger = Dataloger.query.get_or_404(id)
+    
+    try:
+        db.session.delete(datalogger)
+        db.session.commit()
+        flash("Dataloger eliminado correctamente", "success")
+        return '', 204  # Éxito sin contenido
+    
+    except Exception as e:
+        db.session.rollback()
+        flash("Error al eliminar el Dataloger. Puede estar en uso.", "danger")
+        return '', 400  # Error en la solicitud
 
 
 

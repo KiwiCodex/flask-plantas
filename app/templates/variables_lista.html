@@ -1,50 +1,55 @@
-    {% extends "base.html" %}
+{% extends "base.html" %}
 
-    {% block title %}Inicio{% endblock %}
-    
-    {% block content %}
-    
-    <div class="container mt-5">
-        <h1 class="text-center">Lista de Unidades de Medida</h1>
-        <hr>
+{% block title %}Inicio{% endblock %}
 
-        <!-- Mensajes Flash -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+{% block content %}
 
-        <div class="row justify-content-center">
-        <table class="table table-striped table-responsive text-center">
-            <thead class="table-dark">
-                <tr>
-                    <th>Nombre</th>
-                    <th>Símbolo</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for unidad in unidades %}
-                <tr>
-                    <td>{{ unidad.nombre }}</td>
-                    <td><span style="font-weight:bold">{{ unidad.unidad_medida }}</span></td>
-                    <td>
-                        <a href="{{ url_for('main.variables_editar', id=unidad.id) }}" class="btn btn-info btn-sm">Editar</a>
-                        <a href="{{ url_for('main.variables_eliminar', id=unidad.id) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de eliminar esta unidad de medida?');">Eliminar</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        </div>
+<div class="container mt-5">
+    <h1 class="text-center">Lista de Unidades de Medida</h1>
+    <hr>
 
-        <div class="d-flex justify-content-center mt-3">
-            <a href="{{ url_for('main.variables_crear') }}" class="btn btn-primary">Agregar Unidad de Medida</a>
-        </div>
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="row justify-content-center">
+    <table class="table table-striped table-responsive text-center">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Símbolo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for unidad in unidades %}
+            <tr>
+                <td>{{ unidad.nombre }}</td>
+                <td><span style="font-weight:bold">{{ unidad.unidad_medida }}</span></td>
+                <td>
+                    <a href="{{ url_for('main.variables_editar', id=unidad.id) }}" class="btn btn-info btn-sm">Editar</a>
+
+                    <!-- Botón de eliminación con SweetAlert -->
+                    <button class="btn btn-danger btn-sm btn-eliminar"
+                        data-id="{{ unidad.id }}"
+                        data-url="{{ url_for('main.variables_eliminar', id=unidad.id) }}">
+                        Eliminar
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     </div>
 
-    {% endblock %}
+    <div class="d-flex justify-content-center mt-3">
+        <a href="{{ url_for('main.variables_crear') }}" class="btn btn-primary">Agregar Unidad de Medida</a>
+    </div>
+</div>
 
+{% endblock %}
