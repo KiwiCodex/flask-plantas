@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
 from app.models import ModuloEscolar, Planta, Rangos, Escuela, Variables, Dataloger, MedicionesBajadas
 from app import db
 from colegios import COLEGIOS
@@ -52,7 +52,7 @@ def modulos_crear():
         db.session.add(nuevo_modulo)
         db.session.commit()
 
-        flash('Módulo escolar creado con éxito.', 'success')
+        flash(f"<b>{nuevo_modulo.nombre}</b> agregado con éxito.", "success")  # 🟢 Aquí agregamos el nombre en negritas
         return redirect(url_for('main.index'))
 
     return render_template(
@@ -84,7 +84,8 @@ def modulos_editar(id):
         modulo.id_planta = request.form['planta']
 
         db.session.commit()
-        flash("Módulo escolar actualizado correctamente", "success")
+        flash(f"<b>{modulo.nombre}</b> ctualizado correctamente.", "success")  # 🟢 Aquí agregamos el nombre en negritas
+
         return redirect(url_for('main.index'))
 
     escuelas = Escuela.query.all()
@@ -241,7 +242,7 @@ def escuela_crear():
             db.session.add(nueva_escuela)
             db.session.commit()
 
-            flash("Escuela creada correctamente", "success")
+            flash(f"Escuela <b>{nombre}</b> creada correctamente", "success")  # 🔥 Mensaje en negritas
             return redirect(url_for('main.escuela_lista'))
 
         except Exception as e:
@@ -264,7 +265,7 @@ def escuela_editar(id):
         escuela.curso = request.form['curso']
 
         db.session.commit()
-        flash("Escuela actualizada correctamente", "success")
+        flash(f"Escuela <b>{escuela.nombre}</b> actualizada correctamente", "success")  # 🔥 Mensaje en negritas
         return redirect(url_for('main.escuela_lista'))
 
     return render_template('escuela_editar.html', escuela=escuela)
@@ -328,7 +329,8 @@ def plantas_crear():
 
         db.session.commit()  # Guardar todos los cambios en la base de datos
 
-        flash('Planta creada con éxito.', 'success')
+        flash(f"Planta <b>{especie}</b> y rangos agregados con éxito.", "success")  # 🟢 Aquí agregamos el nombre en negritas
+
         return redirect(url_for('main.plantas_lista'))
 
     variables = Variables.query.all()
@@ -367,7 +369,8 @@ def plantas_editar(id):
 
         # Guardar cambios
         db.session.commit()
-        flash('Planta y rangos actualizados con éxito.', 'success')
+
+        flash(f"Planta <b>{planta.especie}</b> actualizada con éxito.", "success")  # 🟢 Aquí agregamos el nombre en negritas
         return redirect(url_for('main.plantas_lista'))
 
 
@@ -416,7 +419,7 @@ def variables_crear():
         db.session.add(nueva_variable)
         db.session.commit()
 
-        flash("Variable creada correctamente", "success")
+        flash(f"Variable <b>{nombre}</b> creada correctamente", "success")  # 🟢 Aquí agregamos el nombre en negritas
         return redirect(url_for('main.variables_lista'))
 
     return render_template('variables_crear.html')
@@ -427,10 +430,10 @@ def variables_editar(id):
 
     if request.method == 'POST':
         variable.nombre = request.form['nombre']
-        variable.unidad_medida = request.form['abreviatura']  # Asegurar que se use 'unidad_medida'
+        variable.unidad_medida = request.form['abreviatura']  
 
         db.session.commit()
-        flash("Variable actualizada correctamente", "success")
+        flash(f"Variable <b>{variable.nombre}</b> actualizada correctamente", "success")  # 🟢 Aquí también
         return redirect(url_for('main.variables_lista'))
 
     return render_template('variables_editar.html', variable=variable)
@@ -471,11 +474,10 @@ def datalogers_crear():
         db.session.add(nuevo_dataloger)
         db.session.commit()
 
-        flash("Dataloger creado correctamente", "success")
+        flash(f"Dataloger <b>{nombre}</b> creado correctamente", "success")  # 🔥 Usamos flash() aquí
         return redirect(url_for('main.datalogers_lista'))
 
     return render_template('datalogers_crear.html')
-
 
 @main.route('/datalogers/editar/<int:id>', methods=['GET', 'POST'])
 def datalogers_editar(id):
@@ -488,11 +490,10 @@ def datalogers_editar(id):
         dataloger.api_url = request.form['api_url']
 
         db.session.commit()
-        flash("Dataloger actualizado correctamente", "success")
+        flash(f"Dataloger <b>{dataloger.nombre}</b> actualizado correctamente", "success")  # 🔥 También aquí
         return redirect(url_for('main.datalogers_lista'))
 
     return render_template('datalogers_editar.html', dataloger=dataloger)
-
 
 @main.route('/datalogers/eliminar/<int:id>', methods=['POST'])
 def datalogers_eliminar(id):
@@ -508,6 +509,15 @@ def datalogers_eliminar(id):
         db.session.rollback()
         flash("Error al eliminar el Dataloger. Puede estar en uso.", "danger")
         return '', 400  # Error en la solicitud
+
+
+
+# -- LIMPIAR MENSAJES SWEETALERT2 -- 
+@main.route('/limpiar-mensajes', methods=['POST'])
+def limpiar_mensajes():
+    session.pop('mensaje', None)
+    session.pop('categoria', None)
+    return '', 204  # Respuesta vacía con código 204 (No Content)
 
 
 

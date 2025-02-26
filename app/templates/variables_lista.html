@@ -1,43 +1,35 @@
 {% extends "base.html" %}
 
-{% block title %}Inicio{% endblock %}
+{% block title %}Lista de Variables{% endblock %}
 
 {% block content %}
-
 <div class="container mt-5">
-    <h1 class="text-center">Lista de Unidades de Medida</h1>
+    <h1 class="text-center">Lista de Variables</h1>
     <hr>
 
-    <!-- Mensajes Flash -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="mb-3">
+        <input type="text" id="buscador" class="form-control" placeholder="Buscar...">
+    </div>
 
-    <div class="row justify-content-center">
-    <table class="table table-striped table-responsive text-center">
+    <table class="table table-striped text-center">
         <thead class="table-dark">
             <tr>
                 <th>Nombre</th>
-                <th>Símbolo</th>
+                <th>Unidad de Medida</th>
                 <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
-            {% for unidad in unidades %}
+            {% for variable in unidades %}
             <tr>
-                <td>{{ unidad.nombre }}</td>
-                <td><span style="font-weight:bold">{{ unidad.unidad_medida }}</span></td>
+                <td>{{ variable.nombre }}</td>
+                <td>{{ variable.unidad_medida }}</td>
                 <td>
-                    <a href="{{ url_for('main.variables_editar', id=unidad.id) }}" class="btn btn-info btn-sm">Editar</a>
-
-                    <!-- Botón de eliminación con SweetAlert -->
+                    <a href="{{ url_for('main.variables_editar', id=variable.id) }}" class="btn btn-info btn-sm">Editar</a>
+                
                     <button class="btn btn-danger btn-sm btn-eliminar"
-                        data-id="{{ unidad.id }}"
-                        data-url="{{ url_for('main.variables_eliminar', id=unidad.id) }}">
+                        data-id="{{ variable.id }}"
+                        data-url="{{ url_for('main.variables_eliminar', id=variable.id) }}">
                         Eliminar
                     </button>
                 </td>
@@ -45,11 +37,9 @@
             {% endfor %}
         </tbody>
     </table>
-    </div>
 
     <div class="d-flex justify-content-center mt-3">
-        <a href="{{ url_for('main.variables_crear') }}" class="btn btn-primary">Agregar Unidad de Medida</a>
+        <a href="{{ url_for('main.variables_crear') }}" class="btn btn-primary">Agregar Variable</a>
     </div>
 </div>
-
 {% endblock %}

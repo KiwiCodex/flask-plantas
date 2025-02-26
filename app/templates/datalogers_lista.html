@@ -7,13 +7,9 @@
     <h1 class="text-center">Lista de Datalogers</h1>
     <hr>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+    <div class="mb-3">
+        <input type="text" id="buscador" class="form-control" placeholder="Buscar...">
+    </div>
 
     <table class="table table-striped text-center">
         <thead class="table-dark">
