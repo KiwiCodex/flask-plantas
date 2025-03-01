@@ -186,6 +186,65 @@ def modulos_simulacion(id):
     
     return render_template("modulos_simulacion.html", modulo=modulo, planta=planta, valores_simulados=valores_simulados, estado_color=estado_color, rangos_dict=rangos_dict, abs=abs)
 
+@main.route('/modulos/simulacion_ajax/<int:id>', methods=['GET'])
+def modulos_simulacion_ajax(id):
+    modulo = ModuloEscolar.query.get_or_404(id)
+    planta = Planta.query.get_or_404(modulo.id_planta)
+
+    rangos = Rangos.query.filter_by(id_planta=planta.id).first()
+    if rangos is None:
+        return jsonify({"error": "No hay rangos definidos para esta planta"}), 400
+
+    variables = {
+        "Temperatura": Variables.query.filter_by(nombre="Temperatura").first(),
+        "pH": Variables.query.filter_by(nombre="pH").first(),
+        "Humedad": Variables.query.filter_by(nombre="Humedad").first()
+    }
+
+    rangos_dict = {
+        "Temperatura": {
+            "min": rangos.temperatura_min or 15.0,
+            "max": rangos.temperatura_max or 30.0,
+            "unidad": variables["Temperatura"].unidad if variables["Temperatura"] else "°C"
+        },
+        "pH": {
+            "min": rangos.ph_min or 6.0,
+            "max": rangos.ph_max or 7.5,
+            "unidad": variables["pH"].unidad if variables["pH"] else "pH"
+        },
+        "Humedad": {
+            "min": rangos.humedad_min or 40.0,
+            "max": rangos.humedad_max or 80.0,
+            "unidad": variables["Humedad"].unidad if variables["Humedad"] else "%"
+        }
+    }
+
+    valores_simulados = {
+        "Temperatura": round(random.uniform(rangos_dict["Temperatura"]["min"] - 5, rangos_dict["Temperatura"]["max"] + 5), 1),
+        "pH": round(random.uniform(rangos_dict["pH"]["min"] - 2, rangos_dict["pH"]["max"] + 2), 1),
+        "Humedad": round(random.uniform(rangos_dict["Humedad"]["min"] - 10, rangos_dict["Humedad"]["max"] + 10), 1)
+    }
+
+    # Determinar el estado de la planta
+    num_alertas = sum(1 for var, valores in rangos_dict.items() if valores_simulados[var] < valores["min"] or valores_simulados[var] > valores["max"])
+    num_precauciones = sum(1 for var, valores in rangos_dict.items() if abs(valores_simulados[var] - valores["min"]) <= 2 or abs(valores_simulados[var] - valores["max"]) <= 2)
+
+    if num_alertas + num_precauciones == 3:
+        estado_color = "red"
+    elif num_alertas + num_precauciones == 2:
+        estado_color = "orange"
+    elif num_alertas + num_precauciones == 1:
+        estado_color = "yellow"
+    else:
+        estado_color = "green"
+
+    return jsonify({
+        "valores_simulados": valores_simulados,
+        "estado_color": estado_color
+    })
+
+
+
 # -- TABLA ESCUELA --
 @main.route('/escuelas')
 def escuela_lista():

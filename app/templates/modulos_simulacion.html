@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-
-
 {% block title %}Simulación de {{ modulo.nombre }}{% endblock %}
 
 {% block content %}
@@ -35,21 +33,41 @@
             <tr>
                 <th>Rango Ideal</th>
                 <th>Valor Actual</th>
+                <th>Condición</th>
                 <th>Estado</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="tabla-simulacion">
             {% for nombre, valor in valores_simulados.items() %}
             <tr>
                 <td>
-                    {{ rangos_dict[nombre]["min"] | round(1) }} - {{ rangos_dict[nombre]["max"] | round(1) }} 
+                    <span class="rango">{{ rangos_dict[nombre]["min"] | round(1) }} - {{ rangos_dict[nombre]["max"] | round(1) }}</span>
                     {{ rangos_dict[nombre].get("unidad", "Sin unidad") }} ({{ nombre }})
                 </td>
                 <td>
-                    <strong>{{ valor | round(1) }}</strong> 
+                    <strong class="valor">{{ valor | round(1) }}</strong>
                     {{ rangos_dict[nombre].get("unidad", "Sin unidad") }}
                 </td>
-                <td>
+                <td class="estado" id="estado-{{ nombre }}" data-min="{{ rangos_dict[nombre]['min'] }}" data-max="{{ rangos_dict[nombre]['max'] }}">
+                    {% set dif_min = rangos_dict[nombre]["min"] - valor %}
+                    {% set dif_max = valor - rangos_dict[nombre]["max"] %}
+                    {% if valor >= rangos_dict[nombre]["min"] and valor <= rangos_dict[nombre]["max"] %}
+                        🟢 Dentro del rango ideal
+                    {% elif dif_max > 0 and dif_max <= 4 %}
+                        🟡 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
+                    {% elif dif_max > 4 and dif_max <= 9 %}
+                        🟠 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
+                    {% elif dif_max >= 10 %}
+                        🔴 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
+                    {% elif dif_min > 0 and dif_min <= 4 %}
+                        🟡 Falta de {{ nombre }} -{{ dif_min | round(1) }}
+                    {% elif dif_min > 4 and dif_min <= 9 %}
+                        🟠 Falta de {{ nombre }} -{{ dif_min | round(1) }}
+                    {% elif dif_min >= 10 %}
+                        🔴 Falta de {{ nombre }} -{{ dif_min | round(1) }}
+                    {% endif %}
+                </td>
+                <td class="alerta" id="alerta-{{ nombre }}">
                     {% if valor < rangos_dict[nombre]["min"] or valor > rangos_dict[nombre]["max"] %}
                         ⚠️ Alerta
                     {% elif abs(valor - rangos_dict[nombre]["min"]) <= 2 or abs(valor - rangos_dict[nombre]["max"]) <= 2 %}
@@ -60,21 +78,22 @@
                 </td>
             </tr>
             {% endfor %}
-        </tbody>
+        </tbody>        
     </table>
 </div>
 
-
-
-
 <div class="d-flex justify-content-center mt-4">
-    <button class="btn btn-primary" onclick="generarNuevosValores()">Generar Nuevos Valores</button>
+    <button id="btn-simular" class="btn btn-primary" data-modulo-id="{{ modulo.id }}">Generar Nuevos Valores</button>
     <a href="{{ url_for('main.index') }}" class="btn btn-secondary ms-2">Volver al Inicio</a>
 </div>
 
+{% block scripts %}
+    <script src="{{ url_for('static', filename='js/simulacion.js') }}"></script>
 <script>
-    function generarNuevosValores() {
-        location.href = "{{ url_for('main.modulos_simulacion', id=modulo.id) }}";
-    }
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById("btn-simular").setAttribute("data-modulo-id", "{{ modulo.id }}");
+    });
 </script>
+{% endblock %}
+
 {% endblock %}
