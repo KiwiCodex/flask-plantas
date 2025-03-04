@@ -6,26 +6,13 @@
 <h1 class="text-center">Simulación del Módulo: {{ modulo.nombre }}</h1>
 <h2 class="text-center">Planta: {{ modulo.planta.especie }}</h2>
 
-<div class="wrap">
-    <div class="state-container text-center">
-        <div class="box {{ estado_color }}" id="estado-planta">
-            <span class="emoji">
-                {% if estado_color == 'green' %} 😊
-                {% elif estado_color == 'yellow' %} 😐
-                {% elif estado_color == 'orange' %} 😟
-                {% else %} 😭
-                {% endif %}
-            </span>
-            <span class="texto">
-                {% if estado_color == 'green' %} ¡Todo bien!
-                {% elif estado_color == 'yellow' %} En cuidado
-                {% elif estado_color == 'orange' %} Preocupado
-                {% else %} Necesito ayuda
-                {% endif %}
-            </span>
-        </div>
+<div class="state-container text-center">
+    <div class="box {{ estado_color }}" id="estado-planta">
+        <span class="emoji">{{ globo[0] }}</span>
+        <span class="texto">{{ globo[1] }}</span>
     </div>
 </div>
+
 
 <div class="container mt-4">
     <table class="table table-bordered text-center">
@@ -53,29 +40,31 @@
                     {% set dif_max = valor - rangos_dict[nombre]["max"] %}
                     {% if valor >= rangos_dict[nombre]["min"] and valor <= rangos_dict[nombre]["max"] %}
                         🟢 Dentro del rango ideal
-                    {% elif dif_max > 0 and dif_max <= 4 %}
-                        🟡 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
-                    {% elif dif_max > 4 and dif_max <= 9 %}
-                        🟠 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
-                    {% elif dif_max >= 10 %}
-                        🔴 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
-                    {% elif dif_min > 0 and dif_min <= 4 %}
+                    {% elif valor < rangos_dict[nombre]["min"] and dif_min <= 4 %}
                         🟡 Falta de {{ nombre }} -{{ dif_min | round(1) }}
-                    {% elif dif_min > 4 and dif_min <= 9 %}
+                    {% elif valor < rangos_dict[nombre]["min"] and dif_min > 4 and dif_min <= 9 %}
                         🟠 Falta de {{ nombre }} -{{ dif_min | round(1) }}
-                    {% elif dif_min >= 10 %}
+                    {% elif valor < rangos_dict[nombre]["min"] and dif_min >= 10 %}
                         🔴 Falta de {{ nombre }} -{{ dif_min | round(1) }}
+                    {% elif valor > rangos_dict[nombre]["max"] and dif_max <= 4 %}
+                        🟡 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
+                    {% elif valor > rangos_dict[nombre]["max"] and dif_max > 4 and dif_max <= 9 %}
+                        🟠 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
+                    {% elif valor > rangos_dict[nombre]["max"] and dif_max >= 10 %}
+                        🔴 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
                     {% endif %}
+                    
                 </td>
                 <td class="alerta" id="alerta-{{ nombre }}">
-                    {% if valor < rangos_dict[nombre]["min"] or valor > rangos_dict[nombre]["max"] %}
+                    {% if valor >= rangos_dict[nombre]["min"] and valor <= rangos_dict[nombre]["max"] %}
+                        ✅ Ok
+                    {% elif valor < rangos_dict[nombre]["min"] or valor > rangos_dict[nombre]["max"] %}
                         ⚠️ Alerta
                     {% elif abs(valor - rangos_dict[nombre]["min"]) <= 2 or abs(valor - rangos_dict[nombre]["max"]) <= 2 %}
                         ⚠️ Precaución
-                    {% else %}
-                        ✅ Ok
                     {% endif %}
                 </td>
+                
             </tr>
             {% endfor %}
         </tbody>        
@@ -89,11 +78,11 @@
 
 {% block scripts %}
     <script src="{{ url_for('static', filename='js/simulacion.js') }}"></script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        document.getElementById("btn-simular").setAttribute("data-modulo-id", "{{ modulo.id }}");
-    });
-</script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            document.getElementById("btn-simular").setAttribute("data-modulo-id", "{{ modulo.id }}");
+        });
+    </script>
 {% endblock %}
 
 {% endblock %}

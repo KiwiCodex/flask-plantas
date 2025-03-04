@@ -57,9 +57,12 @@ function generarNuevosValores() {
                 let alertaTexto = "✅ Ok";
                 if (valor < min || valor > max) {
                     alertaTexto = "⚠️ Alerta";
-                } else if (Math.abs(valor - min) <= 2 || Math.abs(valor - max) <= 2) {
+                } else if ((min - valor > 0 && min - valor <= 2) || (valor - max > 0 && valor - max <= 2)) {
                     alertaTexto = "⚠️ Precaución";
+                } else {
+                    alertaTexto = "✅ Ok";
                 }
+                
 
                 // Actualizar valores en la tabla
                 estadoCelda.innerHTML = estadoTexto;
