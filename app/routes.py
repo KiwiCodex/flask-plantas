@@ -150,19 +150,18 @@ def simulate_values(rangos_dict):
                                          rangos_dict["Humedad"]["max"] + 10), 1)
     }
 
-# Umbrales para la puntuación (puedes ajustarlos)
-THRESHOLD_PREC_LOW = 0.2  
-THRESHOLD_ALERT = 1.0  # Para condiciones fuera del rango
+# Umbrales para la puntuación
+THRESHOLD_PREC_LOW = 0.5   # Si la diferencia al límite es ≤ 0.5, se marca precaución
+THRESHOLD_ALERT = 1.0      # Umbral para condiciones fuera del rango
 
 def determine_conditions(valores_simulados, rangos_dict):
     """
     Para cada variable:
       - Si el valor está fuera del rango:
-          * Si la diferencia con el límite es ≤ THRESHOLD_ALERT → score 1 (Precaución)
-          * Si es mayor → score 3 (Alerta)
-      - Si está dentro del rango:
-          * Si la diferencia al límite es menor a THRESHOLD_PREC_LOW, se marca Precaución (score 1)
-          * Sino, se marca como ideal (score 0)
+          * Si la diferencia con el límite es ≤ THRESHOLD_ALERT → score = 1 (Precaución)
+          * Si la diferencia es > THRESHOLD_ALERT y ≤ 4 → score = 2
+          * Si la diferencia es > 4 → score = 3
+      - Si el valor está dentro del rango, se considera ideal (score = 0)
     Devuelve dos diccionarios: uno con el mensaje (condiciones) y otro con los scores.
     """
     condiciones = {}
@@ -174,37 +173,35 @@ def determine_conditions(valores_simulados, rangos_dict):
         if valor < min_val:
             diff = round(min_val - valor, 1)
             if diff <= THRESHOLD_ALERT:
-                condiciones[var] = f"⚠️ Falta {diff} {rango['unidad']} (Precaución)"
+                condiciones[var] = f"🟡 Falta {diff} {rango['unidad']} (Precaución)"
                 scores[var] = 1
+            elif diff <= 4:
+                condiciones[var] = f"🟠 Falta {diff} {rango['unidad']}"
+                scores[var] = 2
             else:
-                condiciones[var] = f"⚠️ Falta {diff} {rango['unidad']}"
+                condiciones[var] = f"🔴 Falta {diff} {rango['unidad']}"
                 scores[var] = 3
         elif valor > max_val:
             diff = round(valor - max_val, 1)
             if diff <= THRESHOLD_ALERT:
-                condiciones[var] = f"⚠️ Exceso {diff} {rango['unidad']} (Precaución)"
+                condiciones[var] = f"🟡 Exceso {diff} {rango['unidad']} (Precaución)"
                 scores[var] = 1
+            elif diff <= 4:
+                condiciones[var] = f"🟠 Exceso {diff} {rango['unidad']}"
+                scores[var] = 2
             else:
-                condiciones[var] = f"⚠️ Exceso {diff} {rango['unidad']}"
+                condiciones[var] = f"🔴 Exceso {diff} {rango['unidad']}"
                 scores[var] = 3
         else:
-            # Dentro del rango: se considera ideal si está a 0.2 o más de cada límite.
-            diff_to_min = valor - min_val
-            diff_to_max = max_val - valor
-            if diff_to_min < THRESHOLD_PREC_LOW or diff_to_max < THRESHOLD_PREC_LOW:
-                # Se muestra la diferencia faltante o sobrante para alcanzar el límite.
-                diff_near = round(min(diff_to_min, diff_to_max), 1)
-                condiciones[var] = f"⚠️ A {diff_near} {rango['unidad']} del límite (Precaución)"
-                scores[var] = 1
-            else:
-                condiciones[var] = "✅ Dentro del rango ideal"
-                scores[var] = 0
+            condiciones[var] = "🟢 Dentro del rango ideal"
+            scores[var] = 0
     return condiciones, scores
+
 
 def calculate_final_state(scores):
     """
     Suma los scores de cada variable y asigna el estado global según la siguiente escala:
-      - Total score 0  → green (😊, ¡Todo bien!)
+      - Total score 0   → green (😊, ¡Todo bien!)
       - Total score 1-2 → yellow (😐, En cuidado)
       - Total score 3-5 → orange (😟, Preocupado)
       - Total score mayor a 5 → red (😭, Necesito ayuda)
@@ -245,7 +242,6 @@ def modulos_simulacion(id):
         "Humedad": Variables.query.filter_by(nombre="Humedad").first()
     }
     
-    # Construimos el diccionario de rangos y simulamos los valores
     rangos_dict = build_rangos_dict(rangos, variables)
     valores_simulados = simulate_values(rangos_dict)
     condiciones, scores = determine_conditions(valores_simulados, rangos_dict)
@@ -260,6 +256,7 @@ def modulos_simulacion(id):
         estado_color=estado_color,
         rangos_dict=rangos_dict,
         condiciones=condiciones,
+        scores=scores,  # ¡Importante pasar scores al template!
         globo=globo,
         abs=abs
     )
@@ -286,8 +283,10 @@ def modulos_simulacion_ajax(id):
     return jsonify({
         "valores_simulados": valores_simulados,
         "estado_color": estado_color,
-        "condiciones": condiciones
+        "condiciones": condiciones,
+        "scores": scores  # También pasamos los scores en el JSON
     })
+
 
 # -- TABLA ESCUELA --
 @main.route('/escuelas')

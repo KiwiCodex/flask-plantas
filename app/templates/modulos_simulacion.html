@@ -13,7 +13,6 @@
     </div>
 </div>
 
-
 <div class="container mt-4">
     <table class="table table-bordered text-center">
         <thead class="table-dark">
@@ -22,6 +21,7 @@
                 <th>Valor Actual</th>
                 <th>Condición</th>
                 <th>Estado</th>
+                <th>Estabilizar</th>
             </tr>
         </thead>
         <tbody id="tabla-simulacion">
@@ -53,18 +53,22 @@
                     {% elif valor > rangos_dict[nombre]["max"] and dif_max >= 10 %}
                         🔴 Exceso de {{ nombre }} +{{ dif_max | round(1) }}
                     {% endif %}
-                    
                 </td>
                 <td class="alerta" id="alerta-{{ nombre }}">
-                    {% if valor >= rangos_dict[nombre]["min"] and valor <= rangos_dict[nombre]["max"] %}
-                        ✅ Ok
-                    {% elif valor < rangos_dict[nombre]["min"] or valor > rangos_dict[nombre]["max"] %}
-                        ⚠️ Alerta
-                    {% elif abs(valor - rangos_dict[nombre]["min"]) <= 2 or abs(valor - rangos_dict[nombre]["max"]) <= 2 %}
-                        ⚠️ Precaución
+                    {% if scores[nombre] == 0 %}
+                      ✅ Ok (0)
+                    {% elif scores[nombre] == 1 %}
+                      ⚠️ Alerta (+1)
+                    {% elif scores[nombre] == 2 %}
+                      ⚠️ Alerta (+2)
+                    {% elif scores[nombre] == 3 %}
+                      ⚠️ Precaución (+3)
                     {% endif %}
                 </td>
-                
+                <td>
+                    <!-- Botón para estabilizar (fijar un valor aleatorio dentro del rango ideal) -->
+                    <button class="btn btn-sm btn-secondary btn-estabilizar" data-variable="{{ nombre }}">Estabilizar</button>
+                </td>
             </tr>
             {% endfor %}
         </tbody>        
@@ -74,6 +78,10 @@
 <div class="d-flex justify-content-center mt-4">
     <button id="btn-simular" class="btn btn-primary" data-modulo-id="{{ modulo.id }}">Generar Nuevos Valores</button>
     <a href="{{ url_for('main.index') }}" class="btn btn-secondary ms-2">Volver al Inicio</a>
+</div>
+
+<div class="text-center text-secondary mt-3">
+    <p>Puntaje de alerta: 0 = Ideal; +1 = Precaución; +2 = Alerta; +3 = Precaución crítica.</p>
 </div>
 
 {% block scripts %}
