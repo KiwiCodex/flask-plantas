@@ -67,7 +67,7 @@
                 </td>
                 <td>
                     <!-- Botón para estabilizar (fijar un valor aleatorio dentro del rango ideal) -->
-                    <button class="btn btn-sm btn-secondary btn-estabilizar" data-variable="{{ nombre }}">Estabilizar</button>
+                    <button class="btn btn-sm btn-info btn-estabilizar" data-variable="{{ nombre }}">Estabilizar</button>
                 </td>
             </tr>
             {% endfor %}
@@ -81,8 +81,12 @@
 </div>
 
 <div class="text-center text-secondary mt-3">
-    <p>Puntaje de alerta: 0 = Ideal; +1 = Precaución; +2 = Alerta; +3 = Precaución crítica.</p>
+    <p>😊 Todo Bien: 0 puntos</p>
+    <p>😐 En cuidado: 1-2 puntos</p>
+    <p>😟 Preocupado: 3-5 puntos</p>
+    <p>😭 Necesito ayuda: +5 puntos </p>
 </div>
+
 
 {% block scripts %}
     <script src="{{ url_for('static', filename='js/simulacion.js') }}"></script>

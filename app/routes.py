@@ -22,10 +22,12 @@ def index():
 # Crear un nuevo módulo escolar
 @main.route('/modulos/crear', methods=['GET', 'POST'])
 def modulos_crear():
-# Obtener escuelas con coordenadas en formato correcto (WKT)
+    # Obtener escuelas con sus coordenadas y otros datos necesarios
     escuelas = Escuela.query.with_entities(
         Escuela.id, 
         Escuela.nombre, 
+        Escuela.profesor,
+        Escuela.curso,
         db.func.ST_AsText(Escuela.coordenadas).label("coordenadas")
     ).all()
     datalogers = Dataloger.query.all()
@@ -52,7 +54,7 @@ def modulos_crear():
         db.session.add(nuevo_modulo)
         db.session.commit()
 
-        flash(f"<b>{nuevo_modulo.nombre}</b> agregado con éxito.", "success")  # 🟢 Aquí agregamos el nombre en negritas
+        flash(f"<b>{nuevo_modulo.nombre}</b> agregado con éxito.", "success")
         return redirect(url_for('main.index'))
 
     return render_template(
@@ -62,6 +64,7 @@ def modulos_crear():
         plantas=plantas,
         rangos=rangos
     )
+
 
 # Editar un módulo escolar
 @main.route('/modulos/editar/<int:id>', methods=['GET', 'POST'])

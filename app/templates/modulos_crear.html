@@ -23,11 +23,12 @@
                 <option value="" selected disabled>Seleccione una escuela</option>
                 {% for escuela in escuelas %}
                     <option value="{{ escuela.id }}" data-coordenadas="{{ escuela.coordenadas }}">
-                        {{ escuela.nombre }}
+                        {{ escuela.nombre }} - Profesor: {{ escuela.profesor }} - Curso: {{ escuela.curso }}
                     </option>
                 {% endfor %}
             </select>
         </div>
+        
 
         <div class="mb-3">
             <label for="coordenadas" class="form-label">Coordenadas</label>

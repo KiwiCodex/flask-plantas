@@ -21,10 +21,14 @@
             <label for="escuela" class="form-label">Escuela</label>
             <select class="form-control" id="escuela" name="escuela" required>
                 {% for escuela in escuelas %}
-                    <option value="{{ escuela.id }}" {% if escuela.id == modulo.id_escuela %}selected{% endif %}>{{ escuela.nombre }}</option>
+                    <option value="{{ escuela.id }}" data-coordenadas="{{ escuela.coordenadas }}"
+                        {% if escuela.id == modulo.id_escuela %}selected{% endif %}>
+                        {{ escuela.nombre }} - Profesor: {{ escuela.profesor }} - Curso: {{ escuela.curso }}
+                    </option>
                 {% endfor %}
             </select>
         </div>
+        
 
         <div class="mb-3">
             <label for="coordenadas" class="form-label">Coordenadas</label>
