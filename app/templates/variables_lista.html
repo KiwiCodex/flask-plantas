@@ -43,3 +43,9 @@
     </div>
 </div>
 {% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <!-- Incluir el archivo de búsqueda dinámico -->
+    <script src="{{ url_for('static', filename='js/busqueda.js') }}"></script>
+{% endblock %}
