@@ -8,13 +8,11 @@
 
 <hr>
 
-<div class="mb-3">
-    <input type="text" id="buscador" class="form-control" placeholder="Buscar...">
-</div>
 
 {% if modulos %}
-<div class="row justify-content-center">
-    <table class="table table-striped table-responsive text-center">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+      <table id="tabla-escuelas" class="table table-striped text-center">
         <thead class="table-dark">
             <tr>
                 <th>Módulo</th>
@@ -58,7 +56,34 @@
 {% endblock %}
 
 {% block scripts %}
-    {{ super() }}
-    <!-- Incluir el archivo de búsqueda dinámico -->
-    <script src="{{ url_for('static', filename='js/busqueda.js') }}"></script>
+  {{ super() }}
+  <!-- Incluir DataTables CSS y JS -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script>
+    $(document).ready(function(){
+      $('#tabla-escuelas').DataTable({
+          "pageLength": 10,
+          "language": {
+              "search": "Buscar:",
+              "lengthMenu": "Mostrar _MENU_ registros por página",
+              "zeroRecords": "No se encontraron registros",
+              "info": "Mostrando página _PAGE_ de _PAGES_",
+              "infoEmpty": "No hay registros disponibles",
+              "infoFiltered": "(filtrado de _MAX_ registros totales)"
+          },
+          // Configuración para colocar el filtro a la izquierda y el botón a la derecha
+          "dom": '<"top"f<"dt-add">>rt<"bottom"lp><"clear">',
+          "initComplete": function(settings, json) {
+              $("div.dt-add").html('<a href="{{ url_for("main.escuela_crear") }}" class="btn btn-primary">Agregar Escuela</a>');
+          }
+      });
+    });
+  </script>
 {% endblock %}
+
+{% block extra_css %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables_custom.css') }}">
+{% endblock %}
+

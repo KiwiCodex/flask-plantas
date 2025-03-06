@@ -4,76 +4,95 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="text-center">Lista de Plantas</h1>
-    <p class="text-center text-secondary" >*Antes de ingresar Plantas debe tener <b>Variables</b> ya almacenadas primero</p>
-    
-    <hr>
+  <h1 class="text-center">Lista de Plantas</h1>
+  <p class="text-center text-secondary">
+    *Antes de ingresar Plantas debe tener <b>Variables</b> ya almacenadas primero
+  </p>
+  
+  <hr>
 
-    <div class="mb-3">
-        <input type="text" id="buscador" class="form-control" placeholder="Buscar...">
-    </div>
-
-    {% if plantas %}
-    <div class="row justify-content-center">
-        <table class="table table-striped table-responsive text-center">
-            <thead>
-                <tr class="table-dark">
-                    <th>Especie</th>
-                    <th>Fecha de Plantado</th>
-                    <th>Fecha de Cosecha</th>
-                    <th>Rangos</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for planta in plantas %}
-                    <tr>
-                        <td>{{ planta.especie }}</td>
-                        <td>{{ planta.fecha_plantado or 'No especificado' }}</td>
-                        <td>{{ planta.fecha_cosecha or 'No especificado' }}</td>
-                        <td>
-                            {% if planta.rangos %}
-                                <ul class="list-unstyled">
-                                    {% for rango in planta.rangos %}
-                                        <li>
-                                            <span style="font-weight:bold">Temperatura</span>: {{ rango.temperatura_min }}°C - {{ rango.temperatura_max }}°C | 
-                                            <span style="font-weight:bold">pH</span>: {{ rango.ph_min }} - {{ rango.ph_max }} | 
-                                            <span style="font-weight:bold">Humedad</span>: {{ rango.humedad_min }}% - {{ rango.humedad_max }}%
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            {% else %}
-                                <span class="text-muted">No hay rangos registrados</span>
-                            {% endif %}
-                        </td>
-                        
-                        <td>
-                            <a href="{{ url_for('main.plantas_editar', id=planta.id) }}" class="btn btn-info btn-sm">Editar</a>
-                        
-                            <button class="btn btn-danger btn-sm btn-eliminar"
-                                data-id="{{ planta.id }}"
-                                data-url="{{ url_for('main.plantas_eliminar', id=planta.id) }}">
-                                Eliminar
-                            </button>
-                        </td>
-                        
-                    </tr>
+  {% if plantas %}
+  <div class="row justify-content-center">
+    <table id="tabla-lista" class="table table-striped table-responsive text-center">
+      <thead class="table-dark">
+        <tr>
+          <th>Especie</th>
+          <th>Fecha de Plantado</th>
+          <th>Fecha de Cosecha</th>
+          <th>Rangos</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for planta in plantas %}
+        <tr>
+          <td><b>{{ planta.especie }}</b></td>
+          <td>{{ planta.fecha_plantado or 'No especificado' }}</td>
+          <td>{{ planta.fecha_cosecha or 'No especificado' }}</td>
+          <td>
+            {% if planta.rangos %}
+              <ul class="list-unstyled">
+                {% for rango in planta.rangos %}
+                  <li>
+                    <p><span style="font-weight:bold">Temperatura</span>: {{ rango.temperatura_min }}°C - {{ rango.temperatura_max }}°C</p>
+                    <p><span style="font-weight:bold">pH</span>: {{ rango.ph_min }} - {{ rango.ph_max }}</p>
+                    <p><span style="font-weight:bold">Humedad</span>: {{ rango.humedad_min }}% - {{ rango.humedad_max }}%</p>
+                  </li>
                 {% endfor %}
-            </tbody>
-            
-        </table>
-    </div>
-    {% else %}
-        <p class="text-center">No hay plantas registradas.</p>
-    {% endif %}
-    <div class="d-flex justify-content-center mt-3">
-        <a href="{{ url_for('main.plantas_crear') }}" class="btn btn-primary mb-3">Agregar Planta</a>
-    </div>
+              </ul>
+            {% else %}
+              <span class="text-muted">No hay rangos registrados</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('main.plantas_editar', id=planta.id) }}" class="btn btn-info btn-sm">Editar</a>
+            <button class="btn btn-danger btn-sm btn-eliminar"
+                    data-id="{{ planta.id }}"
+                    data-url="{{ url_for('main.plantas_eliminar', id=planta.id) }}">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="text-center">No hay plantas registradas.</p>
+  {% endif %}
 </div>
 {% endblock %}
 
 {% block scripts %}
-    {{ super() }}
-    <!-- Incluir el archivo de búsqueda dinámico -->
-    <script src="{{ url_for('static', filename='js/busqueda.js') }}"></script>
+  {{ super() }}
+  <!-- Incluir DataTables CSS y JS -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script>
+  $(document).ready(function(){
+      $('#tabla-lista').DataTable({
+          "pageLength": 10,
+          "language": {
+              "search": "Buscar:",
+              "lengthMenu": "Mostrar _MENU_ registros por página",
+              "zeroRecords": "No se encontraron registros",
+              "info": "Mostrando página _PAGE_ de _PAGES_",
+              "infoEmpty": "No hay registros disponibles",
+              "infoFiltered": "(filtrado de _MAX_ registros totales)"
+          },
+          // Creamos dos contenedores en la parte superior: uno para el filtro y otro para el botón
+          "dom": '<"top"f<"dt-add">>rt<"bottom"lp><"clear">',
+          "initComplete": function(settings, json) {
+              // Insertamos el botón "Agregar Planta" en el contenedor creado con clase "dt-add"
+              $("div.dt-add").html('<a href="{{ url_for("main.plantas_crear") }}" class="btn btn-primary">Agregar Planta</a>');
+          }
+      });
+  });
+  </script>
 {% endblock %}
+
+{% block extra_css %}
+  {{ super() }}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/datatables_custom.css') }}">
+{% endblock %}
+
