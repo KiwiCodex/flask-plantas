@@ -75,18 +75,27 @@ class Rangos(db.Model):
     id_planta = db.Column(db.Integer, db.ForeignKey('plantas.id'))
 
 
-class MedicionesBajadas(db.Model):
-    __tablename__ = 'mediciones_bajadas'
+class Mediciones(db.Model):
+    __tablename__ = 'mediciones'
     id = db.Column(db.Integer, primary_key=True)
     datetime = db.Column(db.DateTime(timezone=True), server_default=func.now())
-    valor = db.Column(db.Float, nullable=False)
+    value = db.Column(db.Float, nullable=False)
     precision = db.Column(db.Float, nullable=True)
+    sensor_type = db.Column(db.String(50), nullable=True)  # Por ejemplo: 'Atmospheric Pressure'
+    mrid = db.Column(db.String(50), nullable=True)
+    error_flag = db.Column(db.Boolean, default=False)
+    error_description = db.Column(db.String(255), nullable=True)
     
+    # Claves foráneas
     id_dataloger = db.Column(db.Integer, db.ForeignKey('datalogers.id', ondelete="CASCADE"))
     id_planta = db.Column(db.Integer, db.ForeignKey('plantas.id', ondelete="CASCADE"))
-
-
-
+    
+    # Relaciones para facilitar el acceso a los objetos relacionados
+    dataloger = db.relationship('Dataloger', backref=db.backref('mediciones', cascade="all, delete-orphan", lazy=True))
+    planta = db.relationship('Planta', backref=db.backref('mediciones', cascade="all, delete-orphan", lazy=True))
+    
+    def __repr__(self):
+        return f"<Medicion {self.sensor_type or ''} - {self.datetime} - {self.value}>"
 '''
 class ParametrosClimaticos(db.Model):
     __tablename__ = 'parametros_climaticos'

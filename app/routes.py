@@ -1,12 +1,14 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session
-from app.models import ModuloEscolar, Planta, Rangos, Escuela, Variables, Dataloger, MedicionesBajadas
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, session, current_app
+from app.models import ModuloEscolar, Planta, Rangos, Escuela, Variables, Dataloger, Mediciones
 from app import db
 from colegios import COLEGIOS
 from geoalchemy2.shape import from_shape
 from shapely.geometry import Point
 from .api_client import obtener_datos
 from sqlalchemy import func
+from datetime import datetime
 import random
+import requests
 
 
 # Define el blueprint
@@ -640,6 +642,95 @@ def api_datos():
     return jsonify(datos_nube)
 
 
+def descargar_y_guardar_mediciones(api_token, device_sn, start_date, end_date, dataloger_id, planta_id):
+    """
+    Descarga datos de la API de ZentraCloud para el sensor 'Atmospheric Pressure'
+    y los guarda en la tabla Mediciones (modelo unificado).
+
+    Parámetros:
+      - api_token: Tu token de API.
+      - device_sn: Número de serie del dispositivo.
+      - start_date: Fecha de inicio en formato "YYYY-MM-DD HH:MM:SS".
+      - end_date: Fecha de fin en formato "YYYY-MM-DD HH:MM:SS".
+      - dataloger_id: ID del dataloger en tu base de datos.
+      - planta_id: ID de la planta en tu base de datos.
+    """
+    API_URL = "https://zentracloud.com/api/v4/get_readings/"
+    params = {
+        "device_sn": device_sn,
+        "start_date": start_date,
+        "end_date": end_date,
+        "output_format": "json"
+    }
+    headers = {
+        "Authorization": api_token,
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.get(API_URL, headers=headers, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        # Extraer datos del sensor "Atmospheric Pressure"
+        sensor_data = data.get("data", {}).get("Atmospheric Pressure", [])
+        if not sensor_data:
+            print("No se encontraron datos para 'Atmospheric Pressure'.")
+            return
+        
+        # Procesar cada grupo de lecturas
+        for entry in sensor_data:
+            metadata = entry.get("metadata", {})
+            readings = entry.get("readings", [])
+            
+            for reading in readings:
+                dt_str = reading.get("datetime", "")
+                try:
+                    dt_obj = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    print(f"Formato de fecha incorrecto: {dt_str}")
+                    continue
+
+                value = reading.get("value")
+                precision = reading.get("precision")
+                # Puedes asignar el sensor_type de forma fija o extraerlo de metadata si lo requieres.
+                sensor_type = "Atmospheric Pressure"
+                
+                # Crear la instancia del modelo unificado Medicion
+                medicion = Mediciones(
+                    datetime=dt_obj,
+                    value=value,
+                    precision=precision,
+                    sensor_type=sensor_type,
+                    id_dataloger=dataloger_id,
+                    id_planta=planta_id
+                )
+                db.session.add(medicion)
+        db.session.commit()
+        print("¡Mediciones guardadas correctamente!")
+    else:
+        print(f"Error en la solicitud: {response.status_code}")
+
+# Ejemplo de uso dentro de una ruta de prueba en Flask
+@main.route('/prueba/descargar_mediciones')
+def prueba_descargar_mediciones():
+    # Estos valores deberían venir de alguna configuración o formulario
+    API_TOKEN = current_app.config.get("API_TOKEN")
+    DEVICE_SN = current_app.config.get("DEVICE_SN")  # Asegúrate de tener este valor en tu config
+    START_DATE = "2025-02-11 00:00:00"
+    END_DATE = "2025-03-20 01:00:00"
+    
+    # IDs de dataloger y planta a los que se relacionarán las mediciones
+    dataloger_id = 1  # Reemplaza con el ID correcto
+    planta_id = 1     # Reemplaza con el ID correcto
+    
+    descargar_y_guardar_mediciones(API_TOKEN, DEVICE_SN, START_DATE, END_DATE, dataloger_id, planta_id)
+    
+    flash("Mediciones descargadas y almacenadas correctamente.", "success")
+    return redirect(url_for("main.index"))
+
+@main.route('/mediciones/lista')
+def mediciones_lista():
+    mediciones = Mediciones.query.all()
+    return render_template("mediciones_lista.html", mediciones=mediciones)
 
 
 '''
