@@ -9,6 +9,7 @@ from sqlalchemy import func
 from datetime import datetime
 import random
 import requests
+import json
 
 
 # Define el blueprint
