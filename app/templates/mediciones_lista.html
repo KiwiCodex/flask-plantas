@@ -53,7 +53,11 @@ $(document).ready(function(){
                 "next": "Siguiente",
                 "previous": "Anterior"
             }
-        }
+        },
+        "dom": '<"top"f<"dt-add">>rt<"bottom"lp><"clear">',
+          "initComplete": function(settings, json) {
+              $("div.dt-add").html('<a href="{{ url_for("main.prueba_descargar_mediciones") }}" class="btn btn-primary">Descargar</a>');
+          }
     });
 });
 </script>

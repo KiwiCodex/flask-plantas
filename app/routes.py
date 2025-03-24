@@ -643,18 +643,6 @@ def api_datos():
 
 
 def descargar_y_guardar_mediciones(api_token, device_sn, start_date, end_date, dataloger_id, planta_id):
-    """
-    Descarga datos de la API de ZentraCloud para el sensor 'Atmospheric Pressure'
-    y los guarda en la tabla Mediciones (modelo unificado).
-
-    Parámetros:
-      - api_token: Tu token de API.
-      - device_sn: Número de serie del dispositivo.
-      - start_date: Fecha de inicio en formato "YYYY-MM-DD HH:MM:SS".
-      - end_date: Fecha de fin en formato "YYYY-MM-DD HH:MM:SS".
-      - dataloger_id: ID del dataloger en tu base de datos.
-      - planta_id: ID de la planta en tu base de datos.
-    """
     API_URL = "https://zentracloud.com/api/v4/get_readings/"
     params = {
         "device_sn": device_sn,
@@ -668,15 +656,18 @@ def descargar_y_guardar_mediciones(api_token, device_sn, start_date, end_date, d
     }
     
     response = requests.get(API_URL, headers=headers, params=params)
+    print("Status code:", response.status_code)  # Agrega esta línea para ver el status code
     if response.status_code == 200:
         data = response.json()
+        # Imprime el JSON recibido (puedes limitar la cantidad de datos si es muy grande)
+        print("Datos recibidos:", json.dumps(data, indent=2))
+        
         # Extraer datos del sensor "Atmospheric Pressure"
         sensor_data = data.get("data", {}).get("Atmospheric Pressure", [])
         if not sensor_data:
             print("No se encontraron datos para 'Atmospheric Pressure'.")
             return
         
-        # Procesar cada grupo de lecturas
         for entry in sensor_data:
             metadata = entry.get("metadata", {})
             readings = entry.get("readings", [])
@@ -691,10 +682,9 @@ def descargar_y_guardar_mediciones(api_token, device_sn, start_date, end_date, d
 
                 value = reading.get("value")
                 precision = reading.get("precision")
-                # Puedes asignar el sensor_type de forma fija o extraerlo de metadata si lo requieres.
                 sensor_type = "Atmospheric Pressure"
                 
-                # Crear la instancia del modelo unificado Medicion
+                # Crear la instancia de Medicion
                 medicion = Mediciones(
                     datetime=dt_obj,
                     value=value,
@@ -704,33 +694,66 @@ def descargar_y_guardar_mediciones(api_token, device_sn, start_date, end_date, d
                     id_planta=planta_id
                 )
                 db.session.add(medicion)
+                print(f"Agregando medición: {medicion}")  # Log para cada medición agregada
+                
         db.session.commit()
         print("¡Mediciones guardadas correctamente!")
     else:
         print(f"Error en la solicitud: {response.status_code}")
 
+
 # Ejemplo de uso dentro de una ruta de prueba en Flask
 @main.route('/prueba/descargar_mediciones')
 def prueba_descargar_mediciones():
-    # Estos valores deberían venir de alguna configuración o formulario
     API_TOKEN = current_app.config.get("API_TOKEN")
-    DEVICE_SN = current_app.config.get("DEVICE_SN")  # Asegúrate de tener este valor en tu config
+    DEVICE_SN = current_app.config.get("DEVICE_SN")
     START_DATE = "2025-02-11 00:00:00"
     END_DATE = "2025-03-20 01:00:00"
     
-    # IDs de dataloger y planta a los que se relacionarán las mediciones
-    dataloger_id = 1  # Reemplaza con el ID correcto
-    planta_id = 1     # Reemplaza con el ID correcto
+    dataloger_id = 1  
+    planta_id = 1     
     
     descargar_y_guardar_mediciones(API_TOKEN, DEVICE_SN, START_DATE, END_DATE, dataloger_id, planta_id)
     
     flash("Mediciones descargadas y almacenadas correctamente.", "success")
-    return redirect(url_for("main.index"))
+    return redirect(url_for("main.mediciones_lista"))
+
 
 @main.route('/mediciones/lista')
 def mediciones_lista():
     mediciones = Mediciones.query.all()
     return render_template("mediciones_lista.html", mediciones=mediciones)
+
+
+@main.route('/mediciones/ver')
+def prueba_ver_mediciones():
+    API_TOKEN = current_app.config.get("API_TOKEN")
+    DEVICE_SN = current_app.config.get("DEVICE_SN")
+    START_DATE = "2025-02-11 00:00:00"
+    END_DATE = "2025-03-20 01:00:00"
+
+    API_URL = "https://zentracloud.com/api/v4/get_readings/"
+    params = {
+        "device_sn": DEVICE_SN,
+        "start_date": START_DATE,
+        "end_date": END_DATE,
+        "output_format": "json"
+    }
+    headers = {
+        "Authorization": API_TOKEN,
+        "Content-Type": "application/json"
+    }
+    
+    response = requests.get(API_URL, headers=headers, params=params)
+    
+    if response.status_code == 200:
+        data = response.json()
+        # Aquí puedes imprimir o depurar el JSON en consola si lo deseas:
+        print("Datos recibidos:", data)
+        return render_template("mediciones_ver.html", data=data)
+    else:
+        flash(f"Error en la solicitud: {response.status_code}", "danger")
+        return redirect(url_for("main.mediciones_lista"))
 
 
 '''
