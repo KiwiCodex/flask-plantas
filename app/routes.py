@@ -722,8 +722,8 @@ def prueba_descargar_mediciones():
 
 @main.route('/mediciones/lista')
 def mediciones_lista():
-    mediciones = Mediciones.query.all()
-    return render_template("mediciones_lista.html", mediciones=mediciones)
+    readings = Mediciones.query.all()  # Obtener todas las mediciones almacenadas en la BD
+    return render_template("mediciones_lista.html", readings=readings)
 
 
 @main.route('/mediciones/ver')
