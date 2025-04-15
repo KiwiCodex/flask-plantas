@@ -10,6 +10,7 @@ from datetime import datetime
 import random
 import requests
 import json
+from dateutil import parser
 
 
 # Define el blueprint
@@ -628,7 +629,6 @@ def limpiar_mensajes():
     return '', 204  # Respuesta vacía con código 204 (No Content)
 
 
-
 # -- API -- 
 @main.route('/api/datos')
 def api_datos():
@@ -636,12 +636,11 @@ def api_datos():
     start_date = request.args.get("start_date", "2025-01-01 00:00:00")
     end_date = request.args.get("end_date", "2025-02-02 00:00:00")
 
-    datos_nube = obtener_datos(start_date, end_date)
+    datos_nube = obtener_datos(start_date, end_date)  # Suponiendo que esa función está definida en api_client.py
     if datos_nube is None:
         return jsonify({"error": "No se pudieron obtener los datos"}), 500
 
     return jsonify(datos_nube)
-
 
 def descargar_y_guardar_mediciones(api_token, device_sn, start_date, end_date, dataloger_id, planta_id):
     API_URL = "https://zentracloud.com/api/v4/get_readings/"
@@ -656,11 +655,15 @@ def descargar_y_guardar_mediciones(api_token, device_sn, start_date, end_date, d
         "Content-Type": "application/json"
     }
     
+    print("Enviando solicitud a:", API_URL)
+    print("Parámetros:", params)
+    print("Headers:", headers)
+    
     response = requests.get(API_URL, headers=headers, params=params)
-    print("Status code:", response.status_code)  # Agrega esta línea para ver el status code
+    print("Status code:", response.status_code)  # Para depuración
     if response.status_code == 200:
         data = response.json()
-        # Imprime el JSON recibido (puedes limitar la cantidad de datos si es muy grande)
+        # Imprime el JSON recibido (para depuración)
         print("Datos recibidos:", json.dumps(data, indent=2))
         
         # Extraer datos del sensor "Atmospheric Pressure"
@@ -669,23 +672,23 @@ def descargar_y_guardar_mediciones(api_token, device_sn, start_date, end_date, d
             print("No se encontraron datos para 'Atmospheric Pressure'.")
             return
         
+        count = 0  # Contador de mediciones insertadas
         for entry in sensor_data:
-            metadata = entry.get("metadata", {})
             readings = entry.get("readings", [])
-            
             for reading in readings:
                 dt_str = reading.get("datetime", "")
                 try:
-                    dt_obj = datetime.strptime(dt_str, "%Y-%m-%d %H:%M:%S")
-                except ValueError:
-                    print(f"Formato de fecha incorrecto: {dt_str}")
+                    # Usamos dateutil.parser para interpretar la cadena de fecha
+                    dt_obj = parser.parse(dt_str)
+                except Exception as e:
+                    print(f"Error al parsear fecha: {dt_str} - {e}")
                     continue
 
                 value = reading.get("value")
                 precision = reading.get("precision")
                 sensor_type = "Atmospheric Pressure"
                 
-                # Crear la instancia de Medicion
+                # Crear la instancia del modelo Mediciones
                 medicion = Mediciones(
                     datetime=dt_obj,
                     value=value,
@@ -695,39 +698,61 @@ def descargar_y_guardar_mediciones(api_token, device_sn, start_date, end_date, d
                     id_planta=planta_id
                 )
                 db.session.add(medicion)
-                print(f"Agregando medición: {medicion}")  # Log para cada medición agregada
-                
+                print(f"Agregando medición: {medicion}")
+                count += 1
         db.session.commit()
-        print("¡Mediciones guardadas correctamente!")
+        print(f"¡Mediciones guardadas correctamente! Total insertadas: {count}")
     else:
         print(f"Error en la solicitud: {response.status_code}")
 
-
-# Ejemplo de uso dentro de una ruta de prueba en Flask
-@main.route('/prueba/descargar_mediciones')
-def prueba_descargar_mediciones():
-    API_TOKEN = current_app.config.get("API_TOKEN")
-    DEVICE_SN = current_app.config.get("DEVICE_SN")
-    START_DATE = "2025-02-11 00:00:00"
-    END_DATE = "2025-03-20 01:00:00"
+# -------------------------------
+# Ruta para desplegar el formulario de descarga de mediciones
+# -------------------------------
+@main.route('/mediciones/descargar', methods=['GET', 'POST'])
+def mediciones_descargar():
+    if request.method == 'POST':
+        # Recoger los datos del formulario
+        dataloger_id = request.form['dataloger']
+        planta_id = request.form['planta']
+        start_date_input = request.form.get("start_date")
+        end_date_input = request.form.get("end_date")
+        # Convertir el formato de "datetime-local" a "YYYY-MM-DD HH:MM:SS"
+        START_DATE = start_date_input.replace("T", " ") + ":00" if start_date_input else "2025-02-11 00:00:00"
+        END_DATE = end_date_input.replace("T", " ") + ":00" if end_date_input else "2025-03-20 01:00:00"
+        
+        # Obtener el Dataloger desde la BD y usar sus datos
+        dataloger = Dataloger.query.get(dataloger_id)
+        if not dataloger:
+            flash("No se encontró el Dataloger seleccionado.", "danger")
+            return redirect(url_for("main.mediciones_descargar"))
+        
+        # Se asume que el campo 'nombre' del Dataloger funciona como device_sn; ajusta si tienes otro campo.
+        DEVICE_SN = dataloger.nombre
+        API_TOKEN = dataloger.api_token
+        
+        descargar_y_guardar_mediciones(API_TOKEN, DEVICE_SN, START_DATE, END_DATE, dataloger_id, planta_id)
     
-    dataloger_id = 1  
-    planta_id = 1     
-    
-    descargar_y_guardar_mediciones(API_TOKEN, DEVICE_SN, START_DATE, END_DATE, dataloger_id, planta_id)
-    
-    flash("Mediciones descargadas y almacenadas correctamente.", "success")
-    return redirect(url_for("main.mediciones_lista"))
+        flash("Mediciones descargadas y almacenadas correctamente.", "success")
+        return redirect(url_for("main.mediciones_lista"))
+    else:
+        # En GET: mostrar el formulario para que el usuario seleccione Dataloger, Planta y las fechas deseadas
+        datalogers = Dataloger.query.all()
+        plantas = Planta.query.all()
+        return render_template("mediciones_descargar.html", datalogers=datalogers, plantas=plantas)
 
-
+# -------------------------------
+# Ruta para listar todas las mediciones almacenadas en la BD
+# -------------------------------
 @main.route('/mediciones/lista')
 def mediciones_lista():
-    readings = Mediciones.query.all()  # Obtener todas las mediciones almacenadas en la BD
+    readings = Mediciones.query.order_by(Mediciones.datetime.desc()).all()
     return render_template("mediciones_lista.html", readings=readings)
 
-
+# -------------------------------
+# Ruta para ver directamente los datos devueltos por la API (para depuración)
+# -------------------------------
 @main.route('/mediciones/ver')
-def prueba_ver_mediciones():
+def mediciones_ver():
     API_TOKEN = current_app.config.get("API_TOKEN")
     DEVICE_SN = current_app.config.get("DEVICE_SN")
     START_DATE = "2025-02-11 00:00:00"
@@ -749,13 +774,11 @@ def prueba_ver_mediciones():
     
     if response.status_code == 200:
         data = response.json()
-        # Aquí puedes imprimir o depurar el JSON en consola si lo deseas:
-        print("Datos recibidos:", data)
+        print("Datos recibidos:", json.dumps(data, indent=2))
         return render_template("mediciones_ver.html", data=data)
     else:
         flash(f"Error en la solicitud: {response.status_code}", "danger")
         return redirect(url_for("main.mediciones_lista"))
-
 
 '''
 @main.route('/create', methods=['GET', 'POST'])

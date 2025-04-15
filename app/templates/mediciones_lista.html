@@ -12,18 +12,20 @@
         <th>Fecha y Hora</th>
         <th>Valor</th>
         <th>Precisión</th>
-        <th>MRID</th>
-        <th>Error</th>
+        <th>Sensor</th>
+        <th>Dataloger</th>
+        <th>Planta</th>
       </tr>
     </thead>
     <tbody>
-      {% for reading in readings %}
+      {% for medicion in readings %}
       <tr>
-        <td>{{ reading.datetime.strftime("%Y-%m-%d %H:%M:%S") if reading.datetime else "" }}</td>
-        <td>{{ reading.value }}</td>
-        <td>{{ reading.precision }}</td>
-        <td>{{ reading.mrid }}</td>
-        <td>{{ reading.error_description }}</td>
+        <td>{{ medicion.datetime.strftime("%Y-%m-%d %H:%M:%S") if medicion.datetime else "" }}</td>
+        <td>{{ medicion.value }}</td>
+        <td>{{ medicion.precision }}</td>
+        <td>{{ medicion.sensor_type }}</td>
+        <td>{{ medicion.id_dataloger }}</td>
+        <td>{{ medicion.id_planta }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -56,7 +58,7 @@ $(document).ready(function(){
         },
         "dom": '<"top"f<"dt-add">>rt<"bottom"lp><"clear">',
           "initComplete": function(settings, json) {
-              $("div.dt-add").html('<a href="{{ url_for("main.prueba_descargar_mediciones") }}" class="btn btn-primary">Descargar</a>');
+              $("div.dt-add").html('<a href="{{ url_for("main.mediciones_descargar") }}" class="btn btn-primary">Descargar</a>');
           }
     });
 });
